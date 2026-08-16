@@ -13,11 +13,7 @@ import face1 from "../../../assets/agent-face-1.png";
 import face2 from "../../../assets/agent-face-2.png";
 import face3 from "../../../assets/agent-face-3.png";
 import appIcon from "../../../assets/app-icon.png";
-import cinematicBackground from "../../../assets/scenes/cotopaxi.webp";
-import floor1 from "../../../assets/tower-previews/floor-01.png";
-import floor4 from "../../../assets/tower-previews/floor-04.png";
-import floor7 from "../../../assets/tower-previews/floor-07.png";
-import floor12 from "../../../assets/tower-previews/floor-12.png";
+import cityBackground from "../../../assets/city-realistic-v2.png";
 
 const APP_WIDTH = 1600;
 const APP_HEIGHT = 900;
@@ -898,22 +894,15 @@ const CinematicMode = ({frame}) => {
     {x: 650, y: 552, w: 300, h: 175},
     {x: 1015, y: 552, w: 300, h: 175},
   ];
-  const backgroundDrift = progress(frame, 900, 1140);
   return (
-    <div style={{position: "absolute", inset: 0, background: "#0b1114", overflow: "hidden"}}>
-      <Img
-        src={cinematicBackground}
+    <div style={{position: "absolute", inset: 0, background: "linear-gradient(145deg,#11151b 0%,#090c10 48%,#12161b 100%)", overflow: "hidden"}}>
+      <div
         style={{
           position: "absolute",
-          inset: -44,
-          width: APP_WIDTH + 88,
-          height: APP_HEIGHT + 88,
-          objectFit: "cover",
-          filter: `brightness(${0.68 - focusMix * 0.08}) saturate(.88)`,
-          transform: `scale(${1.035 + backgroundDrift * 0.045}) translate(${backgroundDrift * -16}px,${backgroundDrift * -8}px)`,
+          inset: 0,
+          background: `radial-gradient(circle at ${62 - focusMix * 4}% ${34 + focusMix * 3}%,rgba(255,255,255,.055),transparent 28%),linear-gradient(180deg,rgba(255,255,255,.025),rgba(0,0,0,.22))`,
         }}
       />
-      <div style={{position: "absolute", inset: 0, background: `radial-gradient(circle at ${62 - focusMix * 4}% ${34 + focusMix * 3}%,transparent 0 18%,#071014${focusMix > 0.4 ? "96" : "73"} 76%),linear-gradient(180deg,#07101720,#07101766)`}} />
       {[0, 1, 2, 3].map((index) => {
         const start = initial[index];
         const end = focused[index];
@@ -962,97 +951,89 @@ const CinematicMode = ({frame}) => {
   );
 };
 
-const CityBuilding = ({index, frame, left, width, height, src}) => {
+const CityAgentCard = ({index, frame, left, top}) => {
   const show = spring({
     frame: frame - 1172 - index * 7,
     fps: FPS,
-    config: {damping: 17, stiffness: 125, mass: 0.9},
+    config: {damping: 20, stiffness: 115, mass: 0.9},
   });
-  const hover = Math.sin((frame + index * 21) / 24) * 3;
   const activity = (Math.sin((frame + index * 31) / 8) + 1) / 2;
   return (
     <div
       style={{
         position: "absolute",
         left,
-        bottom: 112,
-        width,
-        height,
-        borderRadius: "12px 12px 3px 3px",
-        background: `linear-gradient(180deg,${colors[index]}30,#13263a 24%,#0b1726)`,
-        border: `2px solid ${colors[index]}70`,
-        boxShadow: `0 24px 48px #0009, 0 0 42px ${colors[index]}16`,
-        overflow: "hidden",
-        transformOrigin: "50% 100%",
-        transform: `translate(${(index - 1.5) * (1 - show) * 52}px,${(1 - show) * 80 + hover * show}px) scaleY(${0.1 + show * 0.9}) rotate(${(index - 1.5) * (1 - show) * 1.5}deg)`,
+        top,
+        width: 244,
+        minHeight: 148,
+        borderRadius: 15,
+        background: "rgba(9,13,18,.88)",
+        border: "1px solid rgba(255,255,255,.2)",
+        boxShadow: "0 20px 55px rgba(0,0,0,.55), inset 0 1px rgba(255,255,255,.06)",
+        backdropFilter: "blur(18px) saturate(.8)",
+        padding: 13,
+        boxSizing: "border-box",
+        transform: `translateY(${(1 - show) * 28}px) scale(${0.9 + show * 0.1})`,
         opacity: show,
+        zIndex: 3,
       }}
     >
       <div
         style={{
-          height: 45,
           display: "flex",
           alignItems: "center",
-          padding: "0 12px",
-          background: "#07111ccc",
-          borderBottom: `1px solid ${colors[index]}45`,
           color: "#eef3f8",
-          font: "750 10px Inter, system-ui",
+          font: "750 11px Inter, system-ui",
         }}
       >
-        <Img src={faces[index]} style={{width: 27, height: 27, imageRendering: "pixelated", marginRight: 9}} />
+        <Img src={faces[index]} style={{width: 28, height: 28, imageRendering: "pixelated", borderRadius: 7, marginRight: 9}} />
         {names[index]}
-        <span style={{marginLeft: "auto", color: colors[index], fontSize: 8}}>working</span>
+        <span style={{marginLeft: "auto", color: "#aab4c0", fontSize: 8, display: "flex", alignItems: "center", gap: 6}}>
+          <i style={{display: "block", width: 6, height: 6, borderRadius: 8, background: colors[index], boxShadow: `0 0 ${6 + activity * 7}px ${colors[index]}`}} />
+          LIVE
+        </span>
       </div>
-      <Img
-        src={src}
-        style={{
-          width: "100%",
-          height: height - 45,
-          objectFit: "cover",
-          imageRendering: "pixelated",
-          filter: "saturate(.94) brightness(.86)",
-        }}
-      />
       <div
         style={{
-          position: "absolute",
-          inset: "45px 0 0",
-          background: "linear-gradient(180deg,transparent,#05101a70)",
-          boxShadow: `inset 0 0 0 1px ${colors[index]}28`,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          left: 14,
-          right: 14,
-          bottom: 14,
-          height: 26,
-          borderRadius: 8,
-          background: "rgba(4,9,15,.82)",
-          border: `1px solid ${colors[index]}45`,
-          display: "flex",
-          alignItems: "center",
-          padding: "0 9px",
-          color: "#b9c5d2",
-          font: "650 8px ui-monospace, Menlo, monospace",
+          marginTop: 13,
+          color: "#e3e8ee",
+          font: "600 9px/1.4 ui-monospace, Menlo, monospace",
         }}
       >
-        <span style={{width: 5, height: 5, borderRadius: 6, background: colors[index], boxShadow: `0 0 ${7 + activity * 8}px ${colors[index]}`, marginRight: 7}} />
-        {index === 0 ? "building UI" : index === 1 ? "checking layout" : index === 2 ? "running tests" : "writing notes"}
+        {tasks[index]}
       </div>
+      <div
+        style={{
+          marginTop: 9,
+          color: "#7f8996",
+          font: "500 8px ui-monospace, Menlo, monospace",
+        }}
+      >
+        {terminalLines[index][Math.min(3, Math.floor(progress(frame, 1185 + index * 6, 1260 + index * 5) * 4))]}
+      </div>
+      <div
+        style={{
+          marginTop: 13,
+          height: 3,
+          borderRadius: 5,
+          background: "rgba(255,255,255,.09)",
+          overflow: "hidden",
+        }}
+      >
+        <div style={{height: "100%", width: `${45 + progress(frame, 1185, 1310) * (42 + index * 2)}%`, background: colors[index], opacity: 0.82}} />
+      </div>
+      <div style={{position: "absolute", left: "50%", top: "100%", width: 1, height: 70, background: "linear-gradient(#ffffff55,transparent)", opacity: show * 0.7}} />
     </div>
   );
 };
 
 const CityMode = ({frame}) => {
   const drift = progress(frame, 1200, 1320);
-  const buildings = [
-    {left: 105, width: 300, height: 430, src: floor1},
-    {left: 430, width: 330, height: 545, src: floor4},
-    {left: 790, width: 315, height: 475, src: floor7},
-    {left: 1135, width: 350, height: 590, src: floor12},
+  const agents = [
+    {left: 282, top: 348},
+    {left: 568, top: 302},
+    {left: 873, top: 318},
+    {left: 1190, top: 360},
   ];
   return (
     <div
@@ -1060,46 +1041,29 @@ const CityMode = ({frame}) => {
         position: "absolute",
         inset: 0,
         overflow: "hidden",
-        background: "linear-gradient(180deg,#07142c 0%,#102a49 56%,#0b1826 100%)",
+        background: "#0a0d12",
         color: "#e9f0f8",
       }}
     >
+      <Img
+        src={cityBackground}
+        style={{
+          position: "absolute",
+          inset: -28,
+          width: APP_WIDTH + 56,
+          height: APP_HEIGHT + 56,
+          objectFit: "cover",
+          filter: "brightness(.66) saturate(.72) contrast(1.03)",
+          transform: `scale(${1.015 + drift * 0.02}) translate(${drift * -8}px,${drift * -3}px)`,
+        }}
+      />
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background: "radial-gradient(circle at 18% 14%,#4d78bb3d,transparent 25%),radial-gradient(circle at 82% 28%,#5fc5ad24,transparent 30%)",
-          transform: `translateX(${drift * -10}px)`,
+          background: "linear-gradient(180deg,rgba(4,7,11,.28),rgba(4,7,11,.08) 44%,rgba(4,7,11,.48)),radial-gradient(circle at 50% 54%,transparent 24%,rgba(0,0,0,.36) 92%)",
         }}
       />
-      <div
-        style={{
-          position: "absolute",
-          left: 120,
-          right: 120,
-          bottom: 96,
-          height: 360,
-          opacity: progress(frame, 1205, 1260) * 0.34,
-          background: "repeating-linear-gradient(90deg,transparent 0 98px,#75b7ff22 99px 100px),repeating-linear-gradient(0deg,transparent 0 74px,#75b7ff18 75px 76px)",
-          transform: "perspective(650px) rotateX(64deg)",
-          transformOrigin: "50% 100%",
-        }}
-      />
-      {[120, 245, 382, 610, 832, 1010, 1225, 1430].map((left, index) => (
-        <span
-          key={left}
-          style={{
-            position: "absolute",
-            left,
-            top: 70 + (index % 3) * 78,
-            width: 3 + (index % 2),
-            height: 3 + (index % 2),
-            borderRadius: 8,
-            background: index % 2 ? "#9bc8ff" : "#f7d7a6",
-            boxShadow: "0 0 11px currentColor",
-          }}
-        />
-      ))}
       <div
         style={{
           position: "absolute",
@@ -1110,9 +1074,10 @@ const CityMode = ({frame}) => {
           gap: 12,
           padding: "12px 15px",
           borderRadius: 13,
-          background: "#07111cba",
-          border: "1px solid #91c5ff35",
+          background: "rgba(8,12,17,.78)",
+          border: "1px solid rgba(255,255,255,.16)",
           boxShadow: "0 16px 42px #0007",
+          backdropFilter: "blur(18px)",
           font: "750 13px Inter, system-ui",
         }}
       >
@@ -1120,59 +1085,24 @@ const CityMode = ({frame}) => {
         Agent City
         <span style={{color: "#72d1aa", fontSize: 10}}>4 agents live</span>
       </div>
-      {buildings.map((building, index) => (
-        <CityBuilding key={names[index]} index={index} frame={frame} {...building} />
+      {agents.map((agent, index) => (
+        <CityAgentCard key={names[index]} index={index} frame={frame} {...agent} />
       ))}
-      {[0, 1, 2].map((index) => {
-        const lineShow = progress(frame, 1220 + index * 8, 1250 + index * 8);
-        return (
-          <div
-            key={index}
-            style={{
-              position: "absolute",
-              left: [370, 720, 1070][index],
-              top: [520, 430, 385][index],
-              width: [110, 115, 115][index] * lineShow,
-              height: 2,
-              background: `linear-gradient(90deg,${colors[index]},${colors[index + 1]})`,
-              boxShadow: `0 0 14px ${colors[index]}`,
-              opacity: lineShow * 0.75,
-              transform: `rotate(${[-18, -12, -8][index]}deg)`,
-              transformOrigin: "0 50%",
-              zIndex: 4,
-            }}
-          />
-        );
-      })}
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: 118,
-          background: "linear-gradient(180deg,#0b1725,#050b12)",
-          borderTop: "2px solid #78baff40",
-          boxShadow: "0 -20px 50px #0008",
-        }}
-      >
-        <div style={{height: 5, marginTop: 44, background: "repeating-linear-gradient(90deg,transparent 0 44px,#d4c880 44px 74px,transparent 74px 118px)", opacity: 0.7}} />
-      </div>
     </div>
   );
 };
 
 const FeatureCaption = ({frame}) => {
   const beats = [
-    {from: 12, to: 96, eyebrow: "START EMPTY", title: "Begin with a blank workspace.", color: colors[0]},
-    {from: 102, to: 322, eyebrow: "ADD THE TEAM", title: "Bring agents in as the work grows.", color: colors[3]},
-    {from: 328, to: 568, eyebrow: "ASSIGN THE WORK", title: "Give every agent a clear task.", color: colors[1]},
-    {from: 572, to: 748, eyebrow: "ONE LIVE VIEW", title: "Watch every agent work at the same time.", color: colors[2]},
-    {from: 754, to: 895, eyebrow: "OUTPUTS", title: "Open finished work without leaving the session.", color: colors[0]},
-    {from: 910, to: 1002, eyebrow: "CINEMATIC MODE", title: "Expand into a focused view.", color: colors[1]},
-    {from: 1006, to: 1134, eyebrow: "FOCUSED FOLLOW-UP", title: "@ an agent from the bottom command bar.", color: colors[2]},
-    {from: 1138, to: 1182, eyebrow: "SQUASH TRANSITION", title: "Collapse the focus view into City View.", color: colors[0]},
-    {from: 1186, to: 1312, eyebrow: "CITY VIEW", title: "See every agent inside a living workspace.", color: colors[3]},
+    {from: 12, to: 96, title: "Begin with a blank workspace."},
+    {from: 102, to: 322, title: "Bring agents in as the work grows."},
+    {from: 328, to: 568, title: "Give every agent a clear task."},
+    {from: 572, to: 748, title: "Watch every agent work at the same time."},
+    {from: 754, to: 895, title: "Open finished work without leaving the session."},
+    {from: 910, to: 1002, title: "Expand into a focused view."},
+    {from: 1006, to: 1134, title: "@ an agent from the bottom command bar."},
+    {from: 1138, to: 1182, title: "Collapse the focus view into City View."},
+    {from: 1186, to: 1312, title: "See every agent across the city."},
   ];
   return (
     <>
@@ -1181,28 +1111,25 @@ const FeatureCaption = ({frame}) => {
         const rise = progress(frame, beat.from, beat.from + 18);
         return (
           <div
-            key={beat.eyebrow}
+            key={beat.title}
             style={{
               position: "absolute",
-              left: 92,
+              left: 108,
               top: 150,
-              maxWidth: 780,
-              padding: "13px 17px 15px",
-              borderRadius: 14,
-              background: "rgba(5,9,15,.74)",
-              border: "1px solid rgba(255,255,255,.13)",
-              boxShadow: "0 18px 50px rgba(0,0,0,.42)",
-              backdropFilter: "blur(18px) saturate(1.15)",
+              maxWidth: 820,
               color: "#f4f7fa",
               fontFamily: "Inter, system-ui",
+              fontSize: 34,
+              lineHeight: 1.05,
+              fontWeight: 800,
+              letterSpacing: -1.7,
               opacity,
               transform: `translate(${(1 - rise) * -26}px,${(1 - rise) * 18}px) scale(${0.975 + rise * 0.025})`,
               zIndex: 100,
-              textShadow: "0 3px 24px #000",
+              textShadow: "0 2px 5px rgba(0,0,0,.95), 0 6px 26px rgba(0,0,0,.9)",
             }}
           >
-            <div style={{color: beat.color, fontSize: 13, fontWeight: 850, letterSpacing: 2.8}}>{beat.eyebrow}</div>
-            <div style={{fontSize: 34, lineHeight: 1.05, fontWeight: 800, letterSpacing: -1.7, marginTop: 8}}>{beat.title}</div>
+            {beat.title}
           </div>
         );
       })}
@@ -1327,34 +1254,15 @@ export const BsCodeDemo = () => {
     <AbsoluteFill
       style={{
         overflow: "hidden",
-        background: "radial-gradient(circle at 16% 16%,#17355c55,transparent 34%),radial-gradient(circle at 84% 82%,#16483b3b,transparent 30%),#07080a",
+        background: "radial-gradient(circle at 50% 42%,#17191d 0%,#0b0c0f 54%,#050607 100%)",
         fontFamily: "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, system-ui",
       }}
     >
       <div
         style={{
           position: "absolute",
-          left: 100 + Math.sin(frame / 38) * 55,
-          top: 85 + Math.cos(frame / 45) * 30,
-          width: 620,
-          height: 620,
-          borderRadius: "50%",
-          background: "radial-gradient(circle,#245ea638,transparent 68%)",
-          filter: "blur(28px)",
-          opacity: 0.65,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          right: 40 + Math.cos(frame / 43) * 60,
-          bottom: -110 + Math.sin(frame / 52) * 30,
-          width: 700,
-          height: 700,
-          borderRadius: "50%",
-          background: "radial-gradient(circle,#176c5b30,transparent 68%)",
-          filter: "blur(34px)",
-          opacity: 0.6,
+          inset: 0,
+          background: "linear-gradient(110deg,rgba(255,255,255,.025),transparent 26%,transparent 72%,rgba(255,255,255,.018))",
         }}
       />
       <div
