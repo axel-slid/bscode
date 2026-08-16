@@ -651,8 +651,8 @@ const Cursor = ({frame}) => {
   const addClicks = [105, 165, 225, 285];
   if (frame < 320) {
     const move = progress(frame, 62, 100);
-    x = interpolate(move, [0, 1], [1040, 1390]);
-    y = interpolate(move, [0, 1], [510, 116]);
+    x = interpolate(move, [0, 1], [1040, 1524]);
+    y = interpolate(move, [0, 1], [510, 108]);
     click = Math.max(...addClicks.map((center) => 1 - Math.min(1, Math.abs(frame - center) / 8)));
   } else if (frame < 575) {
     x = interpolate(frame, [320, 340, 385, 405, 440, 460, 495, 515, 550, 575], [1390, 1256, 1256, 1444, 1444, 1256, 1256, 1444, 1444, 1444], {...clamp, easing: Easing.inOut(Easing.cubic)});
@@ -1158,7 +1158,7 @@ const AppWindow = ({frame}) => {
         borderRadius: 25,
         background: "#0e1218",
         overflow: "hidden",
-        boxShadow: "0 55px 140px #000c, 0 0 0 1px #ffffff24, inset 0 0 0 1px #000",
+        boxShadow: "0 55px 140px #000c",
       }}
     >
       <div style={{position: "absolute", inset: 0, opacity: standardOpacity}}>
@@ -1244,7 +1244,7 @@ const cameraForFrame = (frame) => {
   };
 };
 
-export const BsCodeDemo = () => {
+export const BsCodeDemo = ({matteBackground = false}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const intro = spring({frame, fps, config: {damping: 22, stiffness: 96, mass: 0.9}});
@@ -1254,17 +1254,10 @@ export const BsCodeDemo = () => {
     <AbsoluteFill
       style={{
         overflow: "hidden",
-        background: "radial-gradient(circle at 50% 42%,#17191d 0%,#0b0c0f 54%,#050607 100%)",
+        background: matteBackground ? "#0c0f16" : "transparent",
         fontFamily: "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, system-ui",
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "linear-gradient(110deg,rgba(255,255,255,.025),transparent 26%,transparent 72%,rgba(255,255,255,.018))",
-        }}
-      />
       <div
         style={{
           position: "absolute",

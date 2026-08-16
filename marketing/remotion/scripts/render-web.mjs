@@ -8,26 +8,33 @@ const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const websiteRoot = process.env.BSCODE_WEBSITE_ROOT
   ? resolve(process.env.BSCODE_WEBSITE_ROOT)
   : resolve(projectRoot, "../../../../../../personal-website");
-const outputPath = resolve(
+const mp4OutputPath = resolve(
   websiteRoot,
   "assets/bscode/motion/bscode-digital-twin.mp4",
 );
+const webmOutputPath = resolve(
+  websiteRoot,
+  "assets/bscode/motion/bscode-digital-twin.webm",
+);
 const renderDirectory = mkdtempSync(resolve(tmpdir(), "bscode-remotion-"));
-const renderedPath = resolve(renderDirectory, "bscode-digital-twin-render.mp4");
-const silentPath = resolve(renderDirectory, "bscode-digital-twin.mp4");
+const renderedMp4Path = resolve(renderDirectory, "bscode-digital-twin-render.mp4");
+const silentMp4Path = resolve(renderDirectory, "bscode-digital-twin.mp4");
+const renderedWebmPath = resolve(renderDirectory, "bscode-digital-twin-render.webm");
+const silentWebmPath = resolve(renderDirectory, "bscode-digital-twin.webm");
 
 try {
-  mkdirSync(dirname(outputPath), {recursive: true});
+  mkdirSync(dirname(mp4OutputPath), {recursive: true});
   execFileSync(
     resolve(projectRoot, "node_modules/.bin/remotion"),
     [
       "render",
       "src/index.jsx",
       "BsCodeDigitalTwin",
-      renderedPath,
-      "--codec=h264",
+      renderedWebmPath,
+      "--codec=vp8",
       "--crf=20",
-      "--pixel-format=yuv420p",
+      "--pixel-format=yuva420p",
+      "--image-format=png",
       "--concurrency=4",
       "--overwrite",
     ],
@@ -40,7 +47,41 @@ try {
       "-loglevel",
       "error",
       "-i",
-      renderedPath,
+      renderedWebmPath,
+      "-map",
+      "0:v:0",
+      "-c:v",
+      "copy",
+      "-an",
+      "-y",
+      silentWebmPath,
+    ],
+    {stdio: "inherit"},
+  );
+  execFileSync(
+    resolve(projectRoot, "node_modules/.bin/remotion"),
+    [
+      "render",
+      "src/index.jsx",
+      "BsCodeDigitalTwin",
+      renderedMp4Path,
+      "--codec=h264",
+      "--crf=20",
+      "--pixel-format=yuv420p",
+      '--props={"matteBackground":true}',
+      "--concurrency=4",
+      "--overwrite",
+    ],
+    {cwd: projectRoot, stdio: "inherit"},
+  );
+  execFileSync(
+    "ffmpeg",
+    [
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-i",
+      renderedMp4Path,
       "-map",
       "0:v:0",
       "-c:v",
@@ -49,11 +90,12 @@ try {
       "-movflags",
       "+faststart",
       "-y",
-      silentPath,
+      silentMp4Path,
     ],
     {stdio: "inherit"},
   );
-  renameSync(silentPath, outputPath);
+  renameSync(silentWebmPath, webmOutputPath);
+  renameSync(silentMp4Path, mp4OutputPath);
 } finally {
   rmSync(renderDirectory, {recursive: true, force: true});
 }
