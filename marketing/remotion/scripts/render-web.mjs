@@ -16,11 +16,16 @@ const webmOutputPath = resolve(
   websiteRoot,
   "assets/bscode/motion/bscode-digital-twin.webm",
 );
+const movOutputPath = resolve(
+  websiteRoot,
+  "assets/bscode/motion/bscode-digital-twin-alpha.mov",
+);
 const renderDirectory = mkdtempSync(resolve(tmpdir(), "bscode-remotion-"));
 const renderedMp4Path = resolve(renderDirectory, "bscode-digital-twin-render.mp4");
 const silentMp4Path = resolve(renderDirectory, "bscode-digital-twin.mp4");
 const renderedWebmPath = resolve(renderDirectory, "bscode-digital-twin-render.webm");
 const silentWebmPath = resolve(renderDirectory, "bscode-digital-twin.webm");
+const silentMovPath = resolve(renderDirectory, "bscode-digital-twin-alpha.mov");
 
 try {
   mkdirSync(dirname(mp4OutputPath), {recursive: true});
@@ -55,6 +60,36 @@ try {
       "-an",
       "-y",
       silentWebmPath,
+    ],
+    {stdio: "inherit"},
+  );
+  execFileSync(
+    "ffmpeg",
+    [
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-c:v",
+      "libvpx",
+      "-i",
+      silentWebmPath,
+      "-map",
+      "0:v:0",
+      "-vf",
+      "format=bgra",
+      "-c:v",
+      "hevc_videotoolbox",
+      "-alpha_quality",
+      "0.85",
+      "-q:v",
+      "55",
+      "-tag:v",
+      "hvc1",
+      "-an",
+      "-movflags",
+      "+faststart",
+      "-y",
+      silentMovPath,
     ],
     {stdio: "inherit"},
   );
@@ -95,6 +130,7 @@ try {
     {stdio: "inherit"},
   );
   renameSync(silentWebmPath, webmOutputPath);
+  renameSync(silentMovPath, movOutputPath);
   renameSync(silentMp4Path, mp4OutputPath);
 } finally {
   rmSync(renderDirectory, {recursive: true, force: true});
