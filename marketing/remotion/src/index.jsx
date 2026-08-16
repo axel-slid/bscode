@@ -5,7 +5,7 @@ const RemotionRoot = () => (
   <Composition
     id="BsCodeDigitalTwin"
     component={BsCodeDemo}
-    durationInFrames={810}
+    durationInFrames={1320}
     fps={30}
     width={1920}
     height={1080}

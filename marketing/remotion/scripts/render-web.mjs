@@ -5,9 +5,12 @@ import {dirname, resolve} from "node:path";
 import {fileURLToPath} from "node:url";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const websiteRoot = process.env.BSCODE_WEBSITE_ROOT
+  ? resolve(process.env.BSCODE_WEBSITE_ROOT)
+  : resolve(projectRoot, "../../../../../../personal-website");
 const outputPath = resolve(
-  projectRoot,
-  "../../../personal-website/assets/bscode/motion/bscode-digital-twin.mp4",
+  websiteRoot,
+  "assets/bscode/motion/bscode-digital-twin.mp4",
 );
 const renderDirectory = mkdtempSync(resolve(tmpdir(), "bscode-remotion-"));
 const renderedPath = resolve(renderDirectory, "bscode-digital-twin-render.mp4");

@@ -27,6 +27,18 @@ const ease = Easing.bezier(0.22, 1, 0.36, 1);
 const colors = ["#75b7ff", "#e59b67", "#ad91ff", "#72d1aa"];
 const faces = [face0, face1, face2, face3];
 const names = ["Jesse", "Maeve", "Grayson", "Julianna"];
+const tasks = [
+  "Build the command palette",
+  "Review the responsive layout",
+  "Run the release checks",
+  "Write the launch notes",
+];
+const terminalLines = [
+  ["Reading renderer.js", "Mapping command actions", "Updating keyboard flow", "Command palette ready"],
+  ["Opening responsive states", "Checking 430px layout", "Fixing panel overflow", "Mobile layout verified"],
+  ["$ npm run check", "53 checks passed", "$ npm run package:mac", "arm64 package signed"],
+  ["Reading changed files", "Summarizing the release", "Linking generated outputs", "Launch notes complete"],
+];
 
 const progress = (frame, from, to) =>
   interpolate(frame, [from, to], [0, 1], {...clamp, easing: ease});
@@ -34,34 +46,10 @@ const progress = (frame, from, to) =>
 const fadeWindow = (frame, enter, full, leave, gone) =>
   interpolate(frame, [enter, full, leave, gone], [0, 1, 1, 0], clamp);
 
-const pulse = (frame, center, radius = 9) =>
-  1 - Math.min(1, Math.abs(frame - center) / radius);
+const typeText = (value, frame, from, to) =>
+  value.slice(0, Math.floor(progress(frame, from, to) * value.length));
 
-const tinyButton = {
-  width: 28,
-  height: 28,
-  borderRadius: 8,
-  display: "grid",
-  placeItems: "center",
-  color: "#aab1bd",
-  fontSize: 14,
-};
-
-const Glyph = ({children, active = false, color = "#aab1bd", style}) => (
-  <div
-    style={{
-      ...tinyButton,
-      color: active ? "#eaf4ff" : color,
-      background: active ? "#78baff28" : "transparent",
-      boxShadow: active ? "inset 0 0 0 1px #78baff48" : "none",
-      ...style,
-    }}
-  >
-    {children}
-  </div>
-);
-
-const BrandMark = ({size = 24}) => (
+const BrandMark = ({size = 25}) => (
   <Img
     src={appIcon}
     style={{
@@ -74,7 +62,7 @@ const BrandMark = ({size = 24}) => (
   />
 );
 
-const MacChrome = () => (
+const MacChrome = ({agentCount}) => (
   <div
     style={{
       height: 42,
@@ -86,21 +74,12 @@ const MacChrome = () => (
       borderBottom: "1px solid #ffffff10",
       color: "#b7bdc7",
       position: "relative",
-      zIndex: 10,
+      zIndex: 20,
     }}
   >
     <div style={{display: "flex", gap: 9}}>
       {["#ff605c", "#ffbd44", "#00ca4e"].map((color) => (
-        <span
-          key={color}
-          style={{
-            width: 12,
-            height: 12,
-            borderRadius: 20,
-            background: color,
-            boxShadow: `inset 0 0 0 1px #0004, 0 1px 2px #0005`,
-          }}
-        />
+        <span key={color} style={{width: 12, height: 12, borderRadius: 20, background: color}} />
       ))}
     </div>
     <div
@@ -113,24 +92,8 @@ const MacChrome = () => (
         font: "600 12px Inter, ui-sans-serif, system-ui",
       }}
     >
-      <div
-        style={{
-          width: 23,
-          height: 23,
-          display: "grid",
-          placeItems: "center",
-          borderRadius: 6,
-          background: "#64c27d",
-          color: "#08180e",
-          fontSize: 14,
-        }}
-      >
-        ♪
-      </div>
-      <div>
-        <div style={{color: "#e0e4eb", lineHeight: 1}}>Groove District</div>
-        <div style={{fontSize: 8, color: "#7f8795", marginTop: 3}}>Starjunk 95 · playing</div>
-      </div>
+      <BrandMark size={23} />
+      <span style={{color: "#e5e9ef"}}>BsCode</span>
     </div>
     <div
       style={{
@@ -143,28 +106,64 @@ const MacChrome = () => (
         font: "700 10px ui-monospace, SFMono-Regular, Menlo, monospace",
       }}
     >
-      <span>‹</span>
-      <span style={{color: "#d5dae2"}}>local</span>
+      <span>local</span>
       <span>·</span>
       <span>/Projects/bscode</span>
       <span>·</span>
-      <span style={{color: "#75d8af"}}>4 agents active</span>
+      <span style={{color: agentCount ? "#75d8af" : "#737c89"}}>
+        {agentCount ? `${agentCount} agent${agentCount === 1 ? "" : "s"} active` : "ready"}
+      </span>
     </div>
-    <div
-      style={{
-        marginLeft: "auto",
-        display: "flex",
-        alignItems: "center",
-        gap: 9,
-        font: "600 10px Inter, ui-sans-serif, system-ui",
-      }}
-    >
-      <span style={{color: "#6f7784"}}>⌂</span>
+    <div style={{marginLeft: "auto", display: "flex", gap: 13, font: "600 11px Inter, system-ui"}}>
+      <span style={{color: "#7b8491"}}>⌂</span>
       <span>◐</span>
       <span>⚙</span>
       <span style={{color: "#e1e5eb"}}>9:41</span>
       <span style={{color: "#75d8af"}}>▰ 84%</span>
     </div>
+  </div>
+);
+
+const WorkspaceTabs = ({agentCount}) => (
+  <div
+    style={{
+      position: "absolute",
+      left: 226,
+      right: 0,
+      top: 42,
+      height: 50,
+      display: "flex",
+      alignItems: "flex-end",
+      background: "#141920",
+      borderBottom: "1px solid #ffffff13",
+      paddingLeft: 12,
+      boxSizing: "border-box",
+    }}
+  >
+    <div
+      style={{
+        height: 43,
+        minWidth: 240,
+        padding: "0 18px",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        color: "#edf1f6",
+        background: "#1c222b",
+        border: "1px solid #6fb9ff80",
+        borderBottom: 0,
+        borderRadius: "15px 15px 0 0",
+        font: "650 12px Inter, system-ui",
+        boxSizing: "border-box",
+      }}
+    >
+      local
+      <span style={{fontSize: 9, color: agentCount ? "#72d1aa" : "#7a8491", marginLeft: 8}}>
+        {agentCount ? `${agentCount} working` : "empty"}
+      </span>
+      <span style={{marginLeft: "auto", color: "#727b88"}}>×</span>
+    </div>
+    <div style={{padding: "0 14px 12px", color: "#9ca5b3", fontSize: 19}}>+</div>
   </div>
 );
 
@@ -178,9 +177,7 @@ const FileSidebar = () => {
     ["▸", "assets", true],
     ["", "package.json", false],
     ["", "README.md", false],
-    ["", "bscode-notes.md", false],
   ];
-
   return (
     <div
       style={{
@@ -188,7 +185,7 @@ const FileSidebar = () => {
         left: 0,
         top: 92,
         bottom: 26,
-        width: 238,
+        width: 226,
         background: "#11151b",
         borderRight: "1px solid #ffffff12",
         color: "#9da4b0",
@@ -202,19 +199,19 @@ const FileSidebar = () => {
           alignItems: "center",
           gap: 14,
           borderBottom: "1px solid #ffffff10",
-          font: "650 12px Inter, ui-sans-serif, system-ui",
+          font: "650 12px Inter, system-ui",
         }}
       >
         <span style={{color: "#f0f2f5"}}>Files</span>
-        <span>Workspaces</span>
+        <span>Notes</span>
         <span style={{marginLeft: "auto", fontSize: 16}}>⊞</span>
       </div>
-      <div style={{padding: "12px 10px", font: "500 11px ui-monospace, SFMono-Regular, Menlo, monospace"}}>
+      <div style={{padding: "12px 10px", font: "500 11px ui-monospace, Menlo, monospace"}}>
         {files.map(([marker, name, folder], index) => (
           <div
             key={name}
             style={{
-              height: 28,
+              height: 29,
               display: "flex",
               alignItems: "center",
               gap: 7,
@@ -234,60 +231,7 @@ const FileSidebar = () => {
   );
 };
 
-const WorkspaceTabs = () => (
-  <div
-    style={{
-      position: "absolute",
-      left: 238,
-      right: 0,
-      top: 42,
-      height: 50,
-      display: "flex",
-      alignItems: "flex-end",
-      background: "#141920",
-      borderBottom: "1px solid #ffffff13",
-      paddingLeft: 12,
-      boxSizing: "border-box",
-    }}
-  >
-    {[
-      ["gondor", null],
-      ["local", "working"],
-    ].map(([name, state], index) => (
-      <div
-        key={name}
-        style={{
-          height: index === 1 ? 43 : 39,
-          minWidth: index === 1 ? 210 : 185,
-          padding: "0 18px",
-          boxSizing: "border-box",
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          color: index === 1 ? "#edf1f6" : "#9da5b1",
-          background: index === 1 ? "#1c222b" : "#151a21",
-          border: index === 1 ? "1px solid #6fb9ff80" : "1px solid #ffffff0d",
-          borderBottom: 0,
-          borderRadius: "15px 15px 0 0",
-          font: "650 12px Inter, ui-sans-serif, system-ui",
-          marginRight: 5,
-        }}
-      >
-        {name}
-        {state && (
-          <>
-            <Img src={face0} style={{width: 21, height: 21, imageRendering: "pixelated", marginLeft: 8}} />
-            <span style={{fontSize: 8, color: "#72d1aa"}}>working</span>
-          </>
-        )}
-        <span style={{marginLeft: "auto", color: "#727b88"}}>×</span>
-      </div>
-    ))}
-    <div style={{padding: "0 14px 12px", color: "#9ca5b3", fontSize: 19}}>+</div>
-  </div>
-);
-
-const StatusBar = () => (
+const StatusBar = ({agentCount}) => (
   <div
     style={{
       position: "absolute",
@@ -301,114 +245,84 @@ const StatusBar = () => (
       background: "#10141a",
       borderTop: "1px solid #ffffff12",
       color: "#7f8896",
-      font: "600 9px ui-monospace, SFMono-Regular, Menlo, monospace",
+      font: "600 9px ui-monospace, Menlo, monospace",
       boxSizing: "border-box",
     }}
   >
-    <span style={{color: "#6fd5a8"}}>◇ Connected to gondor</span>
-    <span style={{marginLeft: 18}}>CPU 22%</span>
+    <span style={{color: "#6fd5a8"}}>◇ Local workspace</span>
+    <span style={{marginLeft: 18}}>{agentCount}/4 agents</span>
+    <span style={{marginLeft: 14}}>CPU 22%</span>
     <span style={{marginLeft: 12}}>Memory 11 GB / 16 GB</span>
-    <span style={{marginLeft: 12}}>Storage 459 GB / 460 GB</span>
     <span style={{marginLeft: "auto"}}>arm64 · main</span>
   </div>
 );
 
-const OutputPanel = ({open = false, frame}) => {
-  const slide = progress(frame, 635, 662);
-  const width = open ? 292 : 0;
+const AddAgentButton = ({frame}) => {
+  const clickFrames = [105, 165, 225, 285];
+  const click = Math.max(...clickFrames.map((center) => 1 - Math.min(1, Math.abs(frame - center) / 8)));
   return (
     <div
       style={{
         position: "absolute",
-        right: 0,
-        top: 92,
-        bottom: 26,
-        width,
-        opacity: open ? slide : 0,
-        transform: `translateX(${(1 - slide) * 80}px)`,
-        background: "#12171e",
-        borderLeft: "1px solid #ffffff14",
-        color: "#a5adba",
-        overflow: "hidden",
+        right: 17,
+        top: 10,
+        height: 31,
+        padding: "0 12px",
+        display: "flex",
+        alignItems: "center",
+        gap: 7,
+        borderRadius: 9,
+        background: click > 0 ? "#75b7ff32" : "#75b7ff16",
+        boxShadow: `inset 0 0 0 1px #75b7ff66, 0 0 ${20 * click}px #75b7ff40`,
+        color: "#b8d9ff",
+        font: "750 10px Inter, system-ui",
+        transform: `scale(${1 - click * 0.05})`,
       }}
     >
-      <div
-        style={{
-          height: 45,
-          padding: "0 14px",
-          display: "flex",
-          alignItems: "center",
-          borderBottom: "1px solid #ffffff10",
-          font: "750 12px Inter, ui-sans-serif, system-ui",
-          color: "#edf0f5",
-        }}
-      >
-        Outputs
-        <span style={{marginLeft: "auto", color: "#747d8a"}}>↻ &nbsp; ×</span>
-      </div>
-      <div
-        style={{
-          margin: 14,
-          border: "1px solid #ffffff18",
-          borderRadius: 8,
-          padding: 10,
-          font: "500 9px ui-monospace, SFMono-Regular, Menlo, monospace",
-          color: "#747d8a",
-        }}
-      >
-        Paste a local or remote file path…
-      </div>
-      <div style={{padding: "8px 15px"}}>
-        <div style={{font: "800 9px Inter, ui-sans-serif, system-ui", color: "#758090", letterSpacing: 1.2}}>
-          SESSION FILES
-        </div>
+      <span style={{fontSize: 16, lineHeight: 1}}>+</span> Add agent
+    </div>
+  );
+};
+
+const EmptySlate = ({frame}) => {
+  const fade = 1 - progress(frame, 95, 118);
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        display: "grid",
+        placeItems: "center",
+        opacity: fade,
+        color: "#7e8794",
+        fontFamily: "Inter, system-ui",
+      }}
+    >
+      <div style={{textAlign: "center", transform: `translateY(${(1 - fade) * -12}px)`}}>
         <div
           style={{
-            marginTop: 13,
-            border: "1px solid #77b8ff32",
-            background: "linear-gradient(135deg,#77b8ff12,#72d1aa08)",
-            borderRadius: 11,
-            padding: 12,
-            boxShadow: "0 10px 28px #0005",
+            width: 74,
+            height: 74,
+            margin: "0 auto 19px",
+            display: "grid",
+            placeItems: "center",
+            borderRadius: 23,
+            border: "1px dashed #75b7ff70",
+            background: "#75b7ff0d",
+            color: "#9acaff",
+            fontSize: 31,
           }}
         >
-          <div style={{color: "#e4e9f0", font: "700 11px Inter, ui-sans-serif, system-ui"}}>
-            release-summary.md
-          </div>
-          <div style={{marginTop: 6, color: "#7d8796", font: "500 9px Inter, ui-sans-serif, system-ui"}}>
-            Generated by Jesse · just now
-          </div>
-          <div
-            style={{
-              marginTop: 12,
-              height: 84,
-              borderRadius: 7,
-              background: "#0b0f14",
-              padding: 10,
-              boxSizing: "border-box",
-              color: "#b8c0cc",
-              font: "500 8px/1.65 ui-monospace, SFMono-Regular, Menlo, monospace",
-            }}
-          >
-            <div style={{color: "#72d1aa"}}>✓ 53 tests passed</div>
-            <div>✓ arm64 package signed</div>
-            <div>✓ release notes written</div>
-            <div style={{color: "#77b8ff"}}>Ready to ship.</div>
-          </div>
+          +
         </div>
+        <div style={{color: "#e6ebf2", fontSize: 17, fontWeight: 750}}>Blank workspace</div>
+        <div style={{fontSize: 11, marginTop: 7}}>Add an agent when you are ready to begin.</div>
       </div>
     </div>
   );
 };
 
-const terminalLines = [
-  ["Analyzing workspace state…", "Found 4 active sessions", "Reading renderer.js", "Planning visual update"],
-  ["Reviewing changed files…", "Running interaction tests", "42 checks passed", "Preparing handoff"],
-  ["$ npm test", "53 checks passed", "$ npm run package:mac", "Signing arm64 build"],
-  ["Inspecting SSH workspace…", "Outputs synchronized", "ETA 2m", "Working on release notes"],
-];
-
-const AgentHeader = ({index, detail = false}) => (
+const AgentHeader = ({index, state}) => (
   <div
     style={{
       height: 47,
@@ -416,11 +330,10 @@ const AgentHeader = ({index, detail = false}) => (
       alignItems: "center",
       padding: "0 12px",
       borderBottom: "1px solid #ffffff12",
-      background: `linear-gradient(90deg,${colors[index]}12,transparent 35%)`,
+      background: `linear-gradient(90deg,${colors[index]}14,transparent 38%)`,
       boxSizing: "border-box",
     }}
   >
-    <span style={{color: colors[index], fontSize: 13, marginRight: 10}}>⌬</span>
     <Img
       src={faces[index]}
       style={{
@@ -431,170 +344,37 @@ const AgentHeader = ({index, detail = false}) => (
         boxShadow: `0 0 0 1px ${colors[index]}80`,
       }}
     />
-    <span
-      style={{
-        color: "#edf1f6",
-        font: "700 12px Inter, ui-sans-serif, system-ui",
-        marginLeft: 10,
-      }}
-    >
-      {names[index]}
-    </span>
+    <span style={{color: "#edf1f6", font: "700 12px Inter, system-ui", marginLeft: 10}}>{names[index]}</span>
     <span
       style={{
         marginLeft: "auto",
         display: "flex",
         alignItems: "center",
         gap: 7,
-        color: "#848d9a",
-        font: "650 9px Inter, ui-sans-serif, system-ui",
+        color: state === "done" ? "#8b95a2" : "#848d9a",
+        font: "650 9px Inter, system-ui",
       }}
     >
-      <span style={{width: 6, height: 6, borderRadius: 6, background: index === 0 && detail ? "#72d1aa" : colors[index]}} />
-      {index === 0 && detail ? "Done" : "Working"}
+      <span style={{width: 6, height: 6, borderRadius: 6, background: state === "ready" ? "#788391" : colors[index]}} />
+      {state === "ready" ? "Ready" : state === "done" ? "Done" : "Working"}
       <span style={{fontSize: 14}}>⋯</span>
-      <span style={{color: detail ? colors[index] : "#7d8693"}}>☷</span>
-      <span>↗</span>
-      <span>⇄</span>
-      <span>×</span>
     </span>
   </div>
 );
 
-const TerminalContent = ({index, frame}) => {
-  const typed = Math.floor(progress(frame, 46, 122) * 4);
-  return (
-    <div
-      style={{
-        position: "absolute",
-        inset: "47px 0 0",
-        padding: "15px 18px",
-        color: "#b8c0ca",
-        font: "500 10px/1.62 ui-monospace, SFMono-Regular, Menlo, monospace",
-        background: "#0c1015",
-        boxSizing: "border-box",
-      }}
-    >
-      <div style={{color: "#6fd7aa"}}>fish</div>
-      <div style={{color: "#677181"}}>/Users/alexdils/Downloads/test</div>
-      <div style={{marginTop: 8, color: "#919aa7"}}>Welcome to fish, the friendly interactive shell</div>
-      <div style={{marginTop: 14, color: "#7e8794"}}>
-        CPU <span style={{color: "#72d1aa"}}>▰▰▰▱▱ 46%</span>&nbsp;&nbsp; MEM{" "}
-        <span style={{color: "#efbf6f"}}>▰▰▰▰▱ 71%</span>
-      </div>
-      <div style={{marginTop: 12, color: colors[index]}}>
-        {terminalLines[index].slice(0, Math.max(1, typed)).map((line, i) => (
-          <div key={line} style={{color: i === typed - 1 ? "#dce3eb" : "#727c89"}}>
-            <span style={{color: colors[index]}}>› </span>
-            {line}
-          </div>
-        ))}
-      </div>
-      <div style={{position: "absolute", left: 18, bottom: 15, color: "#697482"}}>
-        gpt-5.6-sol xhigh · weekly 94% left
-      </div>
-    </div>
-  );
-};
-
-const ChecklistContent = ({frame}) => {
-  const line1 = progress(frame, 168, 186);
-  const line2 = progress(frame, 190, 210);
-  const done = frame >= 225;
-  const send = progress(frame, 240, 264);
-  return (
-    <div
-      style={{
-        position: "absolute",
-        inset: "47px 0 0",
-        padding: "24px 27px",
-        background: "linear-gradient(135deg,#111820,#0c1117)",
-        color: "#dfe4eb",
-        boxSizing: "border-box",
-        fontFamily: "Inter, ui-sans-serif, system-ui",
-      }}
-    >
-      <div style={{fontSize: 13, fontWeight: 800, letterSpacing: 0.2}}>Checklist</div>
-      {[
-        ["Inspect responsive window state", line1],
-        ["Polish cinematic prompt flow", line2],
-        ["Publish signed Apple-silicon build", done ? 1 : 0],
-      ].map(([label, complete], index) => (
-        <div
-          key={label}
-          style={{
-            marginTop: 15,
-            height: 41,
-            display: "flex",
-            alignItems: "center",
-            borderBottom: "1px solid #ffffff0c",
-            color: complete > 0.9 ? "#8c95a2" : "#d9dee6",
-            fontSize: 11,
-          }}
-        >
-          <span
-            style={{
-              width: 17,
-              height: 17,
-              borderRadius: 5,
-              marginRight: 11,
-              display: "grid",
-              placeItems: "center",
-              background: complete > 0.9 ? "#72d1aa" : "#ffffff08",
-              boxShadow: `inset 0 0 0 1px ${complete > 0.9 ? "#a7efd0" : "#6e7886"}`,
-              color: "#0b1510",
-              fontSize: 10,
-            }}
-          >
-            {complete > 0.9 ? "✓" : ""}
-          </span>
-          <span style={{textDecoration: complete > 0.9 ? "line-through" : "none"}}>{label}</span>
-          <span style={{marginLeft: "auto", color: index < 2 ? "#72d1aa" : "#78828f", fontSize: 9}}>
-            {complete > 0.9 ? "done" : "working"}
-          </span>
-        </div>
-      ))}
-      <div
-        style={{
-          position: "absolute",
-          left: 26,
-          right: 26,
-          bottom: 23,
-          height: 62,
-          borderRadius: 10,
-          border: "1px solid #75b7ff70",
-          background: "#10161d",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 15px",
-          color: "#a5afbc",
-          fontSize: 11,
-          boxShadow: `0 0 ${18 * send}px #75b7ff20`,
-        }}
-      >
-        Send another instruction…
-        <span
-          style={{
-            marginLeft: "auto",
-            width: 33,
-            height: 33,
-            borderRadius: 9,
-            display: "grid",
-            placeItems: "center",
-            background: "#75b7ff18",
-            color: "#9fcfff",
-          }}
-        >
-          ↵
-        </span>
-      </div>
-    </div>
-  );
-};
-
-const AgentCard = ({index, frame, focus = false}) => {
-  const detailed = index === 0 && frame >= 145 && frame < 300;
-  const detailMix = progress(frame, 145, 163);
+const AgentCard = ({index, frame, addedAt, taskAt}) => {
+  const show = spring({
+    frame: frame - addedAt,
+    fps: FPS,
+    config: {damping: 18, stiffness: 150, mass: 0.75},
+  });
+  const taskMix = progress(frame, taskAt, taskAt + 18);
+  const workMix = progress(frame, taskAt + 24, 720);
+  const taskFocus = fadeWindow(frame, taskAt - 48, taskAt - 30, taskAt + 7, taskAt + 28);
+  const workPulse = frame > taskAt + 18 ? (Math.sin((frame + index * 17) / 10) + 1) / 2 : 0;
+  const complete = frame >= 710 && index < 3;
+  const visibleLines = Math.max(1, Math.floor(interpolate(workMix, [0, 1], [1, 4], clamp)));
+  const taskLabel = tasks[index];
   return (
     <div
       style={{
@@ -604,81 +384,404 @@ const AgentCard = ({index, frame, focus = false}) => {
         borderRadius: 13,
         overflow: "hidden",
         background: "#0c1015",
-        boxShadow: `inset 0 0 0 1px ${colors[index]}85, 0 8px 24px #0005`,
-        transform: focus && index === 0 ? `scale(${1 + detailMix * 0.015})` : "none",
+        boxShadow: `inset 0 0 0 ${1 + taskFocus}px ${colors[index]}${taskFocus > 0.15 ? "bb" : "85"}, 0 ${10 + taskFocus * 12}px ${28 + taskFocus * 24}px #0008, 0 0 ${taskFocus * 34}px ${colors[index]}30`,
+        opacity: show,
+        transform: `translate(${(1 - show) * (index % 2 ? 92 : -92)}px, ${(1 - show) * (index < 2 ? -54 : 54)}px) rotate(${(1 - show) * (index % 2 ? 4 : -4)}deg) scale(${0.86 + show * 0.14 + taskFocus * 0.035}) translateY(${-taskFocus * 7}px)`,
+        zIndex: taskFocus > 0.05 ? 8 : 1,
       }}
     >
-      <AgentHeader index={index} detail={detailed} />
-      <div style={{opacity: 1 - detailMix}}>
-        <TerminalContent index={index} frame={frame} />
+      <AgentHeader index={index} state={!taskMix ? "ready" : complete ? "done" : "working"} />
+      <div
+        style={{
+          position: "absolute",
+          inset: "47px 0 0",
+          padding: "15px 18px",
+          background: "#0c1015",
+          color: "#b8c0ca",
+          font: "500 10px/1.62 ui-monospace, Menlo, monospace",
+          boxSizing: "border-box",
+        }}
+      >
+        {!taskMix ? (
+          <div style={{height: "100%", display: "grid", placeItems: "center", color: "#697482"}}>
+            Waiting for a task…
+          </div>
+        ) : (
+          <>
+            <div
+              style={{
+                marginBottom: 13,
+                padding: "8px 10px",
+                borderRadius: 7,
+                background: `${colors[index]}13`,
+                boxShadow: `inset 0 0 0 1px ${colors[index]}35`,
+                color: "#dce3eb",
+                opacity: taskMix,
+                transform: `translateY(${(1 - taskMix) * 8}px)`,
+              }}
+            >
+              <span style={{color: colors[index]}}>@{names[index]}</span> {taskLabel}
+            </div>
+            {terminalLines[index].slice(0, visibleLines).map((line, lineIndex) => {
+              const lineShow = progress(frame, taskAt + 18 + lineIndex * 27, taskAt + 31 + lineIndex * 27);
+              return (
+              <div
+                key={line}
+                style={{
+                  color: lineIndex === visibleLines - 1 ? "#dce3eb" : "#727c89",
+                  opacity: lineShow,
+                  transform: `translateX(${(1 - lineShow) * 9}px)`,
+                }}
+              >
+                <span style={{color: colors[index]}}>› </span>{line}
+              </div>
+              );
+            })}
+            <div
+              style={{
+                position: "absolute",
+                left: 18,
+                right: 18,
+                bottom: 18,
+                height: 4,
+                borderRadius: 9,
+                background: "#ffffff0c",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: `${Math.min(100, 18 + workMix * (index === 3 ? 66 : 82))}%`,
+                  borderRadius: 9,
+                  background: colors[index],
+                  boxShadow: `0 0 ${10 + workPulse * 12}px ${colors[index]}90`,
+                }}
+              />
+            </div>
+          </>
+        )}
       </div>
-      {index === 0 && (
-        <div style={{opacity: detailMix}}>
-          <ChecklistContent frame={frame} />
+    </div>
+  );
+};
+
+const TaskComposer = ({frame}) => {
+  const assignments = [
+    {from: 340, to: 385, index: 0},
+    {from: 395, to: 440, index: 1},
+    {from: 450, to: 495, index: 2},
+    {from: 505, to: 550, index: 3},
+  ];
+  const active = assignments.find((assignment) => frame >= assignment.from && frame < assignment.to + 10);
+  const overall = fadeWindow(frame, 320, 340, 552, 575);
+  if (!active && overall <= 0) return null;
+  const assignment = active || [...assignments].reverse().find((item) => frame >= item.from) || assignments[0];
+  const value = `@${names[assignment.index]} ${tasks[assignment.index]}`;
+  const typed = typeText(value, frame, assignment.from, assignment.to - 8);
+  const sent = progress(frame, assignment.to - 8, assignment.to);
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: 190,
+        right: 190,
+        bottom: 18,
+        height: 58,
+        borderRadius: 16,
+        background: "rgba(9,13,18,.96)",
+        boxShadow: `0 18px 46px #000b, inset 0 0 0 1px ${colors[assignment.index]}70, 0 0 30px ${colors[assignment.index]}12`,
+        display: "flex",
+        alignItems: "center",
+        padding: "0 17px",
+        color: "#dce3eb",
+        font: "600 11px Inter, system-ui",
+        opacity: overall,
+        transform: `translateX(${assignment.index % 2 ? 94 : -94}px) translateY(${(1 - overall) * 18}px) scale(${1 - sent * 0.02})`,
+        zIndex: 30,
+      }}
+    >
+      <span style={{color: colors[assignment.index], fontWeight: 850}}>
+        {typed.slice(0, Math.min(names[assignment.index].length + 1, typed.length))}
+      </span>
+      <span style={{marginLeft: 4}}>{typed.slice(names[assignment.index].length + 1).trimStart()}</span>
+      <span style={{marginLeft: "auto", color: "#737d8a"}}>⌘↵</span>
+      <span
+        style={{
+          marginLeft: 13,
+          width: 32,
+          height: 32,
+          display: "grid",
+          placeItems: "center",
+          borderRadius: 9,
+          background: sent > 0 ? "#75b7ff" : "#75b7ff20",
+          color: sent > 0 ? "#08111c" : "#a8d1ff",
+        }}
+      >
+        ↵
+      </span>
+    </div>
+  );
+};
+
+const OutputPanel = ({frame}) => {
+  const slide = progress(frame, 755, 790);
+  const files = [
+    ["command-palette.js", "Jesse", 796],
+    ["responsive-review.md", "Maeve", 822],
+    ["release-checks.txt", "Grayson", 848],
+  ];
+  return (
+    <div
+      style={{
+        position: "absolute",
+        right: 0,
+        top: 92,
+        bottom: 26,
+        width: 320,
+        opacity: slide,
+        transform: `translateX(${(1 - slide) * 100}px)`,
+        background: "#12171e",
+        borderLeft: "1px solid #ffffff14",
+        color: "#a5adba",
+        overflow: "hidden",
+        zIndex: 16,
+      }}
+    >
+      <div
+        style={{
+          height: 45,
+          padding: "0 14px",
+          display: "flex",
+          alignItems: "center",
+          borderBottom: "1px solid #ffffff10",
+          font: "750 12px Inter, system-ui",
+          color: "#edf0f5",
+        }}
+      >
+        Outputs <span style={{marginLeft: "auto", color: "#747d8a"}}>↻ &nbsp; ×</span>
+      </div>
+      <div style={{padding: "17px 14px"}}>
+        <div style={{font: "800 9px Inter, system-ui", color: "#758090", letterSpacing: 1.2}}>SESSION FILES</div>
+        {files.map(([file, agent, at], index) => {
+          const show = spring({frame: frame - at, fps: FPS, config: {damping: 18, stiffness: 140}});
+          return (
+            <div
+              key={file}
+              style={{
+                marginTop: 12,
+                border: `1px solid ${colors[index]}42`,
+                background: `linear-gradient(135deg,${colors[index]}13,#72d1aa08)`,
+                borderRadius: 10,
+                padding: 12,
+                boxShadow: "0 10px 26px #0005",
+                opacity: show,
+                transform: `translateX(${(1 - show) * 26}px)`,
+              }}
+            >
+              <div style={{color: "#e4e9f0", font: "700 10px Inter, system-ui"}}>{file}</div>
+              <div style={{marginTop: 6, color: "#7d8796", font: "500 8px Inter, system-ui"}}>
+                Generated by {agent} · just now
+              </div>
+            </div>
+          );
+        })}
+        <div
+          style={{
+            marginTop: 14,
+            height: 104,
+            borderRadius: 9,
+            background: "#0b0f14",
+            padding: 12,
+            color: "#aeb7c3",
+            font: "500 9px/1.7 ui-monospace, Menlo, monospace",
+          }}
+        >
+          <div style={{color: "#72d1aa"}}>✓ 53 tests passed</div>
+          <div>✓ responsive states reviewed</div>
+          <div>✓ arm64 package signed</div>
+          <div style={{color: "#77b8ff"}}>Ready to ship.</div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const OutputTransfers = ({frame}) => {
+  const transfers = [
+    {at: 770, fromX: 720, fromY: 390, toY: 185, label: "command-palette.js", color: colors[0]},
+    {at: 801, fromX: 1180, fromY: 390, toY: 258, label: "responsive-review.md", color: colors[1]},
+    {at: 832, fromX: 720, fromY: 665, toY: 331, label: "release-checks.txt", color: colors[2]},
+  ];
+  return transfers.map((transfer) => {
+    const travel = progress(frame, transfer.at, transfer.at + 26);
+    const opacity = fadeWindow(frame, transfer.at - 3, transfer.at + 4, transfer.at + 22, transfer.at + 29);
+    const arc = Math.sin(travel * Math.PI) * -72;
+    const x = interpolate(travel, [0, 1], [transfer.fromX, 1450]);
+    const y = interpolate(travel, [0, 1], [transfer.fromY, transfer.toY]) + arc;
+    return (
+      <div
+        key={transfer.label}
+        style={{
+          position: "absolute",
+          left: x,
+          top: y,
+          height: 28,
+          padding: "0 11px",
+          display: "flex",
+          alignItems: "center",
+          borderRadius: 20,
+          background: "rgba(8,12,17,.94)",
+          border: `1px solid ${transfer.color}80`,
+          boxShadow: `0 10px 28px #000b, 0 0 24px ${transfer.color}35`,
+          color: "#dfe6ee",
+          font: "650 8px ui-monospace, Menlo, monospace",
+          opacity,
+          transform: `translate(-50%,-50%) scale(${0.86 + Math.sin(travel * Math.PI) * 0.18})`,
+          zIndex: 65,
+          whiteSpace: "nowrap",
+        }}
+      >
+        <span style={{color: transfer.color, marginRight: 6}}>◆</span>{transfer.label}
+      </div>
+    );
+  });
+};
+
+const Cursor = ({frame}) => {
+  let x = 1390;
+  let y = 116;
+  let click = 0;
+  const addClicks = [105, 165, 225, 285];
+  if (frame < 320) {
+    const move = progress(frame, 62, 100);
+    x = interpolate(move, [0, 1], [1040, 1390]);
+    y = interpolate(move, [0, 1], [510, 116]);
+    click = Math.max(...addClicks.map((center) => 1 - Math.min(1, Math.abs(frame - center) / 8)));
+  } else if (frame < 575) {
+    x = interpolate(frame, [320, 340, 385, 405, 440, 460, 495, 515, 550, 575], [1390, 1256, 1256, 1444, 1444, 1256, 1256, 1444, 1444, 1444], {...clamp, easing: Easing.inOut(Easing.cubic)});
+    y = interpolate(progress(frame, 320, 340), [0, 1], [116, 804]);
+    click = Math.max(...[382, 437, 492, 547].map((center) => 1 - Math.min(1, Math.abs(frame - center) / 8)));
+  } else if (frame < 900) {
+    const move = progress(frame, 720, 758);
+    x = interpolate(move, [0, 1], [1444, 1508]);
+    y = interpolate(move, [0, 1], [804, 116]);
+    click = 1 - Math.min(1, Math.abs(frame - 760) / 8);
+  } else {
+    return null;
+  }
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: x,
+        top: y,
+        width: 24,
+        height: 31,
+        zIndex: 80,
+        filter: "drop-shadow(0 3px 5px #000c)",
+        transform: `scale(${1 - Math.max(0, click) * 0.12})`,
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "#f8fbff",
+          clipPath: "polygon(0 0,0 92%,27% 68%,43% 100%,56% 94%,40% 63%,76% 63%)",
+        }}
+      />
+      {click > 0 && (
+        <div
+          style={{
+            position: "absolute",
+            left: -12,
+            top: -12,
+            width: 42,
+            height: 42,
+            borderRadius: 50,
+            border: "2px solid #77b8ff",
+            opacity: click,
+            transform: `scale(${0.45 + click * 0.9})`,
+          }}
+        />
       )}
     </div>
   );
 };
 
-const Workspace = ({frame, outputOpen = false}) => {
-  const detailFocus = frame >= 125 && frame < 292;
-  const outputWidth = outputOpen ? 292 : 0;
+const StandardWorkspace = ({frame}) => {
+  const addedAt = [112, 172, 232, 292];
+  const taskAt = [382, 437, 492, 547];
+  const agentCount = addedAt.filter((at) => frame >= at).length;
+  const outputMix = progress(frame, 748, 790);
+  const outputOpen = outputMix > 0;
   return (
     <>
+      <MacChrome agentCount={agentCount} />
+      <WorkspaceTabs agentCount={agentCount} />
       <FileSidebar />
       <div
         style={{
           position: "absolute",
-          left: 238,
-          right: outputWidth,
+          left: 226,
+          right: outputMix * 320,
           top: 92,
           bottom: 26,
           background: "#161b22",
-          transition: "none",
           overflow: "hidden",
         }}
       >
         <div
           style={{
-            height: 39,
+            height: 50,
             display: "flex",
             alignItems: "center",
-            padding: "0 12px",
+            padding: "0 14px",
             color: "#7e8793",
             borderBottom: "1px solid #ffffff0e",
-            font: "600 9px ui-monospace, SFMono-Regular, Menlo, monospace",
+            font: "600 9px ui-monospace, Menlo, monospace",
           }}
         >
           local · ~/Projects/bscode
-          <span style={{marginLeft: "auto"}}>4/4 agents · working</span>
+          <span style={{marginLeft: "auto"}}>{agentCount ? `${agentCount}/4 agents` : "No agents"}</span>
+          <AddAgentButton frame={frame} />
         </div>
         <div
           style={{
             position: "absolute",
             left: 13,
             right: 13,
-            top: 52,
+            top: 63,
             bottom: 13,
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
             gridTemplateRows: "1fr 1fr",
-            gap: 10,
+            gap: 10 + outputMix * 2,
+            transform: `scale(${1 - outputMix * 0.012})`,
+            transformOrigin: "50% 50%",
           }}
         >
+          <EmptySlate frame={frame} />
           {[0, 1, 2, 3].map((index) => (
-            <AgentCard key={index} index={index} frame={frame} focus={detailFocus} />
+            frame >= addedAt[index] ? (
+              <AgentCard key={index} index={index} frame={frame} addedAt={addedAt[index]} taskAt={taskAt[index]} />
+            ) : <div key={index} />
           ))}
         </div>
+        <TaskComposer frame={frame} />
       </div>
-      <OutputPanel open={outputOpen} frame={frame} />
+      {outputOpen && <OutputPanel frame={frame} />}
+      {frame >= 760 && frame < 870 && <OutputTransfers frame={frame} />}
+      <StatusBar agentCount={agentCount} />
+      <Cursor frame={frame} />
     </>
   );
 };
 
-const CinematicCard = ({index, frame}) => {
+const CinematicAgent = ({index, frame, focusStrength = 0}) => {
   const show = spring({
-    frame: frame - 318 - index * 4,
+    frame: frame - 925 - index * 5,
     fps: FPS,
     config: {damping: 19, stiffness: 130, mass: 0.8},
   });
@@ -686,125 +789,70 @@ const CinematicCard = ({index, frame}) => {
     <div
       style={{
         position: "relative",
-        borderRadius: 18,
-        background: "rgba(13,18,24,.64)",
-        backdropFilter: "blur(22px) saturate(.8)",
-        boxShadow: `0 0 0 1px ${colors[index]}45, 0 18px 42px #0006`,
+        height: "100%",
+        borderRadius: 17 + focusStrength * 5,
+        background: focusStrength > 0.35 ? "rgba(15,20,27,.87)" : "rgba(13,18,24,.62)",
+        backdropFilter: "blur(22px) saturate(.82)",
+        boxShadow: `0 0 0 ${1 + focusStrength}px ${colors[index]}${focusStrength > 0.35 ? "90" : "3d"}, 0 ${18 + focusStrength * 10}px ${42 + focusStrength * 28}px #0009, 0 0 ${focusStrength * 80}px ${colors[index]}18`,
         overflow: "hidden",
-        opacity: show,
-        transform: `translateY(${(1 - show) * 26}px) scale(${0.94 + show * 0.06})`,
+        opacity: show * (1 - focusStrength * 0.04),
+        transform: `translateY(${(1 - show) * 28}px) scale(${0.94 + show * 0.06})`,
       }}
     >
-      <AgentHeader index={index} detail={index === 0} />
-      <div
-        style={{
-          padding: "18px 20px",
-          color: "#dbe2ea",
-          font: "500 10px/1.65 ui-monospace, SFMono-Regular, Menlo, monospace",
-        }}
-      >
-        <div style={{color: colors[index], fontWeight: 700}}>
-          {["Shipping the release", "Reviewing responsive states", "Running visual checks", "Writing documentation"][index]}
-        </div>
-        <div style={{color: "#a4aeba", marginTop: 8}}>
-          {["✓ 53 tests passed", "Viewport 1280 → 2560", "Cinematic scenes verified", "Feature guide updated"][index]}
-        </div>
-        <div style={{color: "#747f8d", marginTop: 12}}>ETA {index + 1}m · working</div>
+      <AgentHeader index={index} state={index === 0 ? "done" : "working"} />
+      <div style={{padding: "18px 20px", color: "#dbe2ea", font: "500 10px/1.65 ui-monospace, Menlo, monospace"}}>
+        <div style={{color: colors[index], fontWeight: 700}}>{tasks[index]}</div>
+        <div style={{color: "#a4aeba", marginTop: 9}}>{terminalLines[index][3]}</div>
+        <div style={{color: "#747f8d", marginTop: 13}}>{focusStrength > 0.35 ? "Focused · awaiting follow-up" : `Working · ETA ${index + 1}m`}</div>
       </div>
     </div>
   );
 };
 
-const CinematicMode = ({frame}) => {
-  const appear = progress(frame, 292, 320);
-  const mentionLength = Math.floor(progress(frame, 394, 424) * 16);
-  const prompt = "@Maeve review UI";
-  const menuOpacity = fadeWindow(frame, 382, 394, 416, 428);
-  const sent = progress(frame, 438, 454);
+const MentionComposer = ({frame}) => {
+  const show = progress(frame, 1000, 1026);
+  const prompt = "@Maeve check the mobile layout";
+  const typed = typeText(prompt, frame, 1032, 1112);
+  const menuOpacity = fadeWindow(frame, 1018, 1032, 1060, 1074);
   return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        opacity: appear,
-        background: "#0b1114",
-        overflow: "hidden",
-      }}
-    >
-      <Img
-        src={cinematicBackground}
-        style={{
-          position: "absolute",
-          inset: -20,
-          width: APP_WIDTH + 40,
-          height: APP_HEIGHT + 40,
-          objectFit: "cover",
-          filter: "brightness(.72) saturate(.86)",
-          transform: `scale(${1.035 + progress(frame, 300, 476) * 0.015}) translateX(${progress(frame, 300, 476) * -8}px)`,
-        }}
-      />
+    <>
       <div
         style={{
           position: "absolute",
-          inset: 0,
-          background: "radial-gradient(circle at 50% 35%,transparent,#07101468 76%), linear-gradient(180deg,#07101725,#07101752)",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          left: 42,
-          right: 42,
-          top: 72,
-          bottom: 113,
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gridTemplateRows: "1fr 1fr",
-          gap: 18,
-        }}
-      >
-        {[0, 1, 2, 3].map((index) => (
-          <CinematicCard key={index} index={index} frame={frame} />
-        ))}
-      </div>
-      <div
-        style={{
-          position: "absolute",
-          left: 318,
-          right: 318,
-          bottom: 28,
-          height: 58,
+          left: 300,
+          right: 300,
+          bottom: 30,
+          height: 62,
           borderRadius: 19,
-          background: "rgba(8,12,16,.82)",
-          backdropFilter: "blur(18px)",
-          boxShadow: "0 18px 45px #0008, inset 0 0 0 1px #ffffff20",
+          background: "rgba(8,12,16,.86)",
+          backdropFilter: "blur(20px)",
+          boxShadow: "0 18px 45px #0009, inset 0 0 0 1px #ffffff22",
           display: "flex",
           alignItems: "center",
           padding: "0 20px",
           color: "#d6dde6",
-          font: "600 12px Inter, ui-sans-serif, system-ui",
-          transform: `translateY(${(1 - progress(frame, 362, 384)) * 25}px) scale(${1 - sent * 0.012})`,
+          font: "600 12px Inter, system-ui",
+          opacity: show,
+          transform: `translateY(${(1 - show) * 24}px)`,
         }}
       >
-        {mentionLength > 0 ? (
+        {typed ? (
           <>
-            <span style={{color: colors[1], fontWeight: 850}}>{prompt.slice(0, Math.min(6, mentionLength))}</span>
-            <span>{prompt.slice(6, mentionLength)}</span>
+            <span style={{color: colors[1], fontWeight: 850}}>{typed.slice(0, Math.min(6, typed.length))}</span>
+            <span style={{marginLeft: 4}}>{typed.slice(6).trimStart()}</span>
           </>
-        ) : (
-          <span style={{color: "#77818e"}}>What should we work on?</span>
-        )}
+        ) : <span style={{color: "#77818e"}}>Mention an agent with @</span>}
         <span style={{marginLeft: "auto", color: "#697482"}}>⌘K</span>
         <span style={{marginLeft: 14, color: "#9ecfff", fontSize: 18}}>↵</span>
       </div>
       <div
         style={{
           position: "absolute",
-          left: 318,
-          bottom: 92,
-          width: 340,
+          left: 300,
+          bottom: 100,
+          width: 350,
           borderRadius: 13,
-          background: "rgba(9,13,18,.94)",
+          background: "rgba(9,13,18,.95)",
           border: "1px solid #ffffff1c",
           boxShadow: "0 18px 38px #0008",
           padding: 7,
@@ -823,7 +871,7 @@ const CinematicMode = ({frame}) => {
               borderRadius: 8,
               background: index === 1 ? "#ffffff0d" : "transparent",
               color: "#dfe4eb",
-              font: "650 11px Inter, ui-sans-serif, system-ui",
+              font: "650 11px Inter, system-ui",
             }}
           >
             <Img src={faces[index]} style={{width: 27, height: 27, imageRendering: "pixelated", marginRight: 10}} />
@@ -832,289 +880,300 @@ const CinematicMode = ({frame}) => {
           </div>
         ))}
       </div>
-      <div style={{position: "absolute", right: 26, top: 21, color: "#c9d1db", font: "500 13px Inter, system-ui"}}>
-        Exit&nbsp;&nbsp; ×
+    </>
+  );
+};
+
+const CinematicMode = ({frame}) => {
+  const focusMix = progress(frame, 982, 1030);
+  const initial = [
+    {x: 48, y: 72, w: 657, h: 346},
+    {x: 723, y: 72, w: 829, h: 346},
+    {x: 48, y: 436, w: 657, h: 346},
+    {x: 723, y: 436, w: 829, h: 346},
+  ];
+  const focused = [
+    {x: 285, y: 552, w: 300, h: 175},
+    {x: 315, y: 78, w: 970, h: 446},
+    {x: 650, y: 552, w: 300, h: 175},
+    {x: 1015, y: 552, w: 300, h: 175},
+  ];
+  const backgroundDrift = progress(frame, 900, 1140);
+  return (
+    <div style={{position: "absolute", inset: 0, background: "#0b1114", overflow: "hidden"}}>
+      <Img
+        src={cinematicBackground}
+        style={{
+          position: "absolute",
+          inset: -44,
+          width: APP_WIDTH + 88,
+          height: APP_HEIGHT + 88,
+          objectFit: "cover",
+          filter: `brightness(${0.68 - focusMix * 0.08}) saturate(.88)`,
+          transform: `scale(${1.035 + backgroundDrift * 0.045}) translate(${backgroundDrift * -16}px,${backgroundDrift * -8}px)`,
+        }}
+      />
+      <div style={{position: "absolute", inset: 0, background: `radial-gradient(circle at ${62 - focusMix * 4}% ${34 + focusMix * 3}%,transparent 0 18%,#071014${focusMix > 0.4 ? "96" : "73"} 76%),linear-gradient(180deg,#07101720,#07101766)`}} />
+      {[0, 1, 2, 3].map((index) => {
+        const start = initial[index];
+        const end = focused[index];
+        const x = interpolate(focusMix, [0, 1], [start.x, end.x]);
+        const y = interpolate(focusMix, [0, 1], [start.y, end.y]);
+        const width = interpolate(focusMix, [0, 1], [start.w, end.w]);
+        const height = interpolate(focusMix, [0, 1], [start.h, end.h]);
+        const isSelected = index === 1;
+        return (
+          <div
+            key={names[index]}
+            style={{
+              position: "absolute",
+              left: x,
+              top: y,
+              width,
+              height,
+              opacity: isSelected ? 1 : 1 - focusMix * 0.28,
+              transform: `translateY(${isSelected ? -Math.sin(focusMix * Math.PI) * 12 : Math.sin(focusMix * Math.PI) * 12}px)`,
+              zIndex: isSelected ? 3 : 2,
+            }}
+          >
+            <CinematicAgent index={index} frame={frame} focusStrength={isSelected ? focusMix : 0} />
+          </div>
+        );
+      })}
+      {focusMix > 0.05 && (
+        <div
+          style={{
+            position: "absolute",
+            left: interpolate(focusMix, [0, 1], [730, 332]),
+            top: interpolate(focusMix, [0, 1], [80, 87]),
+            color: colors[1],
+            font: "850 9px Inter, system-ui",
+            letterSpacing: 1.5,
+            opacity: focusMix,
+            zIndex: 5,
+          }}
+        >
+          FOCUSED AGENT
+        </div>
+      )}
+      <MentionComposer frame={frame} />
+      <div style={{position: "absolute", right: 26, top: 21, color: "#c9d1db", font: "500 13px Inter, system-ui"}}>Exit &nbsp; ×</div>
+    </div>
+  );
+};
+
+const CityBuilding = ({index, frame, left, width, height, src}) => {
+  const show = spring({
+    frame: frame - 1172 - index * 7,
+    fps: FPS,
+    config: {damping: 17, stiffness: 125, mass: 0.9},
+  });
+  const hover = Math.sin((frame + index * 21) / 24) * 3;
+  const activity = (Math.sin((frame + index * 31) / 8) + 1) / 2;
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left,
+        bottom: 112,
+        width,
+        height,
+        borderRadius: "12px 12px 3px 3px",
+        background: `linear-gradient(180deg,${colors[index]}30,#13263a 24%,#0b1726)`,
+        border: `2px solid ${colors[index]}70`,
+        boxShadow: `0 24px 48px #0009, 0 0 42px ${colors[index]}16`,
+        overflow: "hidden",
+        transformOrigin: "50% 100%",
+        transform: `translate(${(index - 1.5) * (1 - show) * 52}px,${(1 - show) * 80 + hover * show}px) scaleY(${0.1 + show * 0.9}) rotate(${(index - 1.5) * (1 - show) * 1.5}deg)`,
+        opacity: show,
+      }}
+    >
+      <div
+        style={{
+          height: 45,
+          display: "flex",
+          alignItems: "center",
+          padding: "0 12px",
+          background: "#07111ccc",
+          borderBottom: `1px solid ${colors[index]}45`,
+          color: "#eef3f8",
+          font: "750 10px Inter, system-ui",
+        }}
+      >
+        <Img src={faces[index]} style={{width: 27, height: 27, imageRendering: "pixelated", marginRight: 9}} />
+        {names[index]}
+        <span style={{marginLeft: "auto", color: colors[index], fontSize: 8}}>working</span>
+      </div>
+      <Img
+        src={src}
+        style={{
+          width: "100%",
+          height: height - 45,
+          objectFit: "cover",
+          imageRendering: "pixelated",
+          filter: "saturate(.94) brightness(.86)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: "45px 0 0",
+          background: "linear-gradient(180deg,transparent,#05101a70)",
+          boxShadow: `inset 0 0 0 1px ${colors[index]}28`,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          left: 14,
+          right: 14,
+          bottom: 14,
+          height: 26,
+          borderRadius: 8,
+          background: "rgba(4,9,15,.82)",
+          border: `1px solid ${colors[index]}45`,
+          display: "flex",
+          alignItems: "center",
+          padding: "0 9px",
+          color: "#b9c5d2",
+          font: "650 8px ui-monospace, Menlo, monospace",
+        }}
+      >
+        <span style={{width: 5, height: 5, borderRadius: 6, background: colors[index], boxShadow: `0 0 ${7 + activity * 8}px ${colors[index]}`, marginRight: 7}} />
+        {index === 0 ? "building UI" : index === 1 ? "checking layout" : index === 2 ? "running tests" : "writing notes"}
       </div>
     </div>
   );
 };
 
-const TowerFloor = ({src, label, accent, style}) => (
-  <div
-    style={{
-      height: 152,
-      position: "relative",
-      overflow: "hidden",
-      border: `2px solid ${accent}`,
-      borderRadius: 8,
-      background: "#101720",
-      boxShadow: "0 10px 26px #0007",
-      ...style,
-    }}
-  >
-    <Img
-      src={src}
-      style={{
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-        imageRendering: "pixelated",
-      }}
-    />
-    <div
-      style={{
-        position: "absolute",
-        right: 8,
-        bottom: 7,
-        padding: "4px 7px",
-        borderRadius: 4,
-        background: "#0b1018dd",
-        color: "#eef2f7",
-        font: "700 8px ui-monospace, SFMono-Regular, Menlo, monospace",
-      }}
-    >
-      {label}
-    </div>
-  </div>
-);
-
-const PixelMode = ({frame}) => {
-  const appear = progress(frame, 480, 506);
-  const lift = progress(frame, 512, 600);
+const CityMode = ({frame}) => {
+  const drift = progress(frame, 1200, 1320);
+  const buildings = [
+    {left: 105, width: 300, height: 430, src: floor1},
+    {left: 430, width: 330, height: 545, src: floor4},
+    {left: 790, width: 315, height: 475, src: floor7},
+    {left: 1135, width: 350, height: 590, src: floor12},
+  ];
   return (
     <div
       style={{
         position: "absolute",
         inset: 0,
-        opacity: appear,
-        background: "linear-gradient(180deg,#07142c,#0c203b)",
-        color: "#e4ecf6",
         overflow: "hidden",
+        background: "linear-gradient(180deg,#07142c 0%,#102a49 56%,#0b1826 100%)",
+        color: "#e9f0f8",
       }}
     >
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background:
-            "radial-gradient(circle at 18% 18%,#3a65a330,transparent 32%), radial-gradient(circle at 80% 80%,#4ac3a01f,transparent 31%)",
+          background: "radial-gradient(circle at 18% 14%,#4d78bb3d,transparent 25%),radial-gradient(circle at 82% 28%,#5fc5ad24,transparent 30%)",
+          transform: `translateX(${drift * -10}px)`,
         }}
       />
       <div
         style={{
           position: "absolute",
-          left: 62,
-          top: 45,
-          bottom: 47,
-          width: 515,
-          borderRadius: 20,
-          background: "#0b121ddd",
-          boxShadow: "inset 0 0 0 1px #7fa8d53c, 0 30px 70px #0008",
-          padding: 22,
-          boxSizing: "border-box",
+          left: 120,
+          right: 120,
+          bottom: 96,
+          height: 360,
+          opacity: progress(frame, 1205, 1260) * 0.34,
+          background: "repeating-linear-gradient(90deg,transparent 0 98px,#75b7ff22 99px 100px),repeating-linear-gradient(0deg,transparent 0 74px,#75b7ff18 75px 76px)",
+          transform: "perspective(650px) rotateX(64deg)",
+          transformOrigin: "50% 100%",
         }}
-      >
-        <div style={{display: "flex", alignItems: "center", marginBottom: 16}}>
-          <span style={{font: "800 15px Inter, ui-sans-serif, system-ui"}}>Agent tower</span>
-          <span style={{marginLeft: "auto", color: "#8d9bad", font: "650 10px Inter, system-ui"}}>4 active floors</span>
-        </div>
-        <div
+      />
+      {[120, 245, 382, 610, 832, 1010, 1225, 1430].map((left, index) => (
+        <span
+          key={left}
           style={{
-            position: "relative",
-            height: 716,
-            padding: "10px 20px 0",
-            overflow: "hidden",
-            borderRadius: 14,
-            background: "linear-gradient(180deg,#050914,#0a1826)",
+            position: "absolute",
+            left,
+            top: 70 + (index % 3) * 78,
+            width: 3 + (index % 2),
+            height: 3 + (index % 2),
+            borderRadius: 8,
+            background: index % 2 ? "#9bc8ff" : "#f7d7a6",
+            boxShadow: "0 0 11px currentColor",
           }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              left: 18,
-              right: 18,
-              top: 8 - lift * 88,
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-            }}
-          >
-            <div
-              style={{
-                height: 48,
-                width: 220,
-                margin: "0 auto -3px",
-                background: "#1b2735",
-                clipPath: "polygon(14% 100%,21% 48%,36% 48%,43% 0,57% 0,64% 48%,79% 48%,86% 100%)",
-              }}
-            />
-            <TowerFloor src={floor12} label="4 agents · Sky lab" accent="#74b7ff" />
-            <TowerFloor src={floor7} label="3 agents · Library" accent="#ad91ff" />
-            <TowerFloor src={floor4} label="2 agents · Garden" accent="#72d1aa" />
-            <TowerFloor src={floor1} label="1 agent · Workshop" accent="#e59b67" />
-            <div
-              style={{
-                width: 430,
-                height: 38,
-                margin: "-2px auto 0",
-                background: "#1d2a37",
-                clipPath: "polygon(4% 0,96% 0,100% 100%,0 100%)",
-              }}
-            />
-          </div>
-        </div>
-      </div>
+        />
+      ))}
       <div
         style={{
           position: "absolute",
-          left: 622,
-          right: 58,
-          top: 45,
-          bottom: 47,
-          borderRadius: 20,
-          background: "#111a24e8",
-          boxShadow: "inset 0 0 0 1px #ffffff18, 0 30px 70px #0007",
-          overflow: "hidden",
+          left: 44,
+          top: 38,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "12px 15px",
+          borderRadius: 13,
+          background: "#07111cba",
+          border: "1px solid #91c5ff35",
+          boxShadow: "0 16px 42px #0007",
+          font: "750 13px Inter, system-ui",
         }}
       >
-        <Img
-          src={floor7}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            imageRendering: "pixelated",
-            transform: "scale(1.04)",
-            filter: "saturate(.95) brightness(.9)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            left: 28,
-            top: 25,
-            padding: "10px 13px",
-            borderRadius: 8,
-            background: "#0a111bdd",
-            boxShadow: "inset 0 0 0 1px #ad91ff70",
-            font: "700 11px ui-monospace, SFMono-Regular, Menlo, monospace",
-          }}
-        >
-          Floor 3 · Library
-        </div>
-        <div
-          style={{
-            position: "absolute",
-            right: 26,
-            top: 24,
-            display: "flex",
-            gap: 8,
-          }}
-        >
-          {faces.map((src, index) => (
-            <Img
-              key={src}
-              src={src}
-              style={{
-                width: 31,
-                height: 31,
-                imageRendering: "pixelated",
-                borderRadius: 6,
-                boxShadow: `0 0 0 1px ${colors[index]}`,
-              }}
-            />
-          ))}
-        </div>
+        <BrandMark size={31} />
+        Agent City
+        <span style={{color: "#72d1aa", fontSize: 10}}>4 agents live</span>
+      </div>
+      {buildings.map((building, index) => (
+        <CityBuilding key={names[index]} index={index} frame={frame} {...building} />
+      ))}
+      {[0, 1, 2].map((index) => {
+        const lineShow = progress(frame, 1220 + index * 8, 1250 + index * 8);
+        return (
+          <div
+            key={index}
+            style={{
+              position: "absolute",
+              left: [370, 720, 1070][index],
+              top: [520, 430, 385][index],
+              width: [110, 115, 115][index] * lineShow,
+              height: 2,
+              background: `linear-gradient(90deg,${colors[index]},${colors[index + 1]})`,
+              boxShadow: `0 0 14px ${colors[index]}`,
+              opacity: lineShow * 0.75,
+              transform: `rotate(${[-18, -12, -8][index]}deg)`,
+              transformOrigin: "0 50%",
+              zIndex: 4,
+            }}
+          />
+        );
+      })}
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 118,
+          background: "linear-gradient(180deg,#0b1725,#050b12)",
+          borderTop: "2px solid #78baff40",
+          boxShadow: "0 -20px 50px #0008",
+        }}
+      >
+        <div style={{height: 5, marginTop: 44, background: "repeating-linear-gradient(90deg,transparent 0 44px,#d4c880 44px 74px,transparent 74px 118px)", opacity: 0.7}} />
       </div>
     </div>
   );
 };
 
-const Cursor = ({x, y, click = 0, visible = true}) => (
-  <div
-    style={{
-      position: "absolute",
-      left: x,
-      top: y,
-      width: 24,
-      height: 31,
-      opacity: visible ? 1 : 0,
-      zIndex: 50,
-      filter: "drop-shadow(0 3px 5px #000c)",
-      transform: `scale(${1 - click * 0.12})`,
-    }}
-  >
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        background: "#f8fbff",
-        clipPath: "polygon(0 0,0 92%,27% 68%,43% 100%,56% 94%,40% 63%,76% 63%)",
-      }}
-    />
-    {click > 0 && (
-      <div
-        style={{
-          position: "absolute",
-          left: -12,
-          top: -12,
-          width: 42,
-          height: 42,
-          borderRadius: 50,
-          border: "2px solid #77b8ff",
-          opacity: click,
-          transform: `scale(${0.45 + click * 0.9})`,
-        }}
-      />
-    )}
-  </div>
-);
-
-const ActiveCursor = ({frame}) => {
-  let x = 1475;
-  let y = 54;
-  let visible = frame < 675;
-  let click = 0;
-
-  if (frame < 145) {
-    const move = progress(frame, 72, 112);
-    x = interpolate(move, [0, 1], [1110, 560]);
-    y = interpolate(move, [0, 1], [740, 210]);
-    click = pulse(frame, 118, 8);
-  } else if (frame < 292) {
-    const move = progress(frame, 228, 252);
-    x = interpolate(move, [0, 1], [610, 811]);
-    y = interpolate(move, [0, 1], [355, 551]);
-    click = pulse(frame, 258, 8);
-  } else if (frame < 480) {
-    const move = progress(frame, 370, 405);
-    x = interpolate(move, [0, 1], [1240, 840]);
-    y = interpolate(move, [0, 1], [610, 828]);
-    click = pulse(frame, 438, 8);
-  } else if (frame < 630) {
-    const move = progress(frame, 540, 574);
-    x = interpolate(move, [0, 1], [1240, 904]);
-    y = interpolate(move, [0, 1], [700, 444]);
-    click = pulse(frame, 580, 8);
-  } else {
-    const move = progress(frame, 632, 650);
-    x = interpolate(move, [0, 1], [1420, 1510]);
-    y = interpolate(move, [0, 1], [210, 113]);
-    click = pulse(frame, 655, 8);
-  }
-
-  return <Cursor x={x} y={y} click={click} visible={visible} />;
-};
-
 const FeatureCaption = ({frame}) => {
   const beats = [
-    {from: 22, to: 137, eyebrow: "THE WORKSPACE", title: "Every agent. One clear view.", color: colors[0]},
-    {from: 145, to: 284, eyebrow: "LIVE PROGRESS", title: "Know what’s done — and what’s next.", color: colors[2]},
-    {from: 305, to: 469, eyebrow: "CINEMATIC MODE", title: "Direct the whole team in one sentence.", color: colors[1]},
-    {from: 492, to: 620, eyebrow: "PIXEL TOWER", title: "See the work come alive.", color: colors[3]},
-    {from: 646, to: 758, eyebrow: "OUTPUTS", title: "Everything lands where you expect.", color: colors[0]},
+    {from: 12, to: 96, eyebrow: "START EMPTY", title: "Begin with a blank workspace.", color: colors[0]},
+    {from: 102, to: 322, eyebrow: "ADD THE TEAM", title: "Bring agents in as the work grows.", color: colors[3]},
+    {from: 328, to: 568, eyebrow: "ASSIGN THE WORK", title: "Give every agent a clear task.", color: colors[1]},
+    {from: 572, to: 748, eyebrow: "ONE LIVE VIEW", title: "Watch every agent work at the same time.", color: colors[2]},
+    {from: 754, to: 895, eyebrow: "OUTPUTS", title: "Open finished work without leaving the session.", color: colors[0]},
+    {from: 910, to: 1002, eyebrow: "CINEMATIC MODE", title: "Expand into a focused view.", color: colors[1]},
+    {from: 1006, to: 1134, eyebrow: "FOCUSED FOLLOW-UP", title: "@ an agent from the bottom command bar.", color: colors[2]},
+    {from: 1138, to: 1182, eyebrow: "SQUASH TRANSITION", title: "Collapse the focus view into City View.", color: colors[0]},
+    {from: 1186, to: 1312, eyebrow: "CITY VIEW", title: "See every agent inside a living workspace.", color: colors[3]},
   ];
-
   return (
     <>
       {beats.map((beat) => {
@@ -1126,21 +1185,24 @@ const FeatureCaption = ({frame}) => {
             style={{
               position: "absolute",
               left: 92,
-              top: 70,
+              top: 150,
+              maxWidth: 780,
+              padding: "13px 17px 15px",
+              borderRadius: 14,
+              background: "rgba(5,9,15,.74)",
+              border: "1px solid rgba(255,255,255,.13)",
+              boxShadow: "0 18px 50px rgba(0,0,0,.42)",
+              backdropFilter: "blur(18px) saturate(1.15)",
               color: "#f4f7fa",
-              fontFamily: "Inter, ui-sans-serif, system-ui",
+              fontFamily: "Inter, system-ui",
               opacity,
-              transform: `translateY(${(1 - rise) * 18}px)`,
-              zIndex: 70,
+              transform: `translate(${(1 - rise) * -26}px,${(1 - rise) * 18}px) scale(${0.975 + rise * 0.025})`,
+              zIndex: 100,
               textShadow: "0 3px 24px #000",
             }}
           >
-            <div style={{color: beat.color, fontSize: 13, fontWeight: 850, letterSpacing: 2.8}}>
-              {beat.eyebrow}
-            </div>
-            <div style={{fontSize: 34, lineHeight: 1.05, fontWeight: 800, letterSpacing: -1.7, marginTop: 8}}>
-              {beat.title}
-            </div>
+            <div style={{color: beat.color, fontSize: 13, fontWeight: 850, letterSpacing: 2.8}}>{beat.eyebrow}</div>
+            <div style={{fontSize: 34, lineHeight: 1.05, fontWeight: 800, letterSpacing: -1.7, marginTop: 8}}>{beat.title}</div>
           </div>
         );
       })}
@@ -1149,9 +1211,17 @@ const FeatureCaption = ({frame}) => {
 };
 
 const AppWindow = ({frame}) => {
-  const cinematic = frame >= 292 && frame < 480;
-  const pixel = frame >= 480 && frame < 630;
-  const outputOpen = frame >= 630;
+  const circle = interpolate(frame, [900, 985], [0, 1], {
+    ...clamp,
+    easing: Easing.inOut(Easing.cubic),
+  });
+  const squashOut = progress(frame, 1138, 1170);
+  const cityExpand = progress(frame, 1168, 1202);
+  const standardOpacity = 1 - progress(frame, 975, 985);
+  const cinematicVisible = frame >= 900;
+  const cityVisible = frame >= 1162;
+  const cityOpacity = progress(frame, 1164, 1174);
+  const cinematicOpacity = 1 - progress(frame, 1160, 1176);
   return (
     <div
       style={{
@@ -1164,81 +1234,129 @@ const AppWindow = ({frame}) => {
         boxShadow: "0 55px 140px #000c, 0 0 0 1px #ffffff24, inset 0 0 0 1px #000",
       }}
     >
-      {!cinematic && !pixel && (
-        <>
-          <MacChrome />
-          <WorkspaceTabs />
-          <Workspace frame={frame} outputOpen={outputOpen} />
-          <StatusBar />
-        </>
+      <div style={{position: "absolute", inset: 0, opacity: standardOpacity}}>
+        <StandardWorkspace frame={frame} />
+      </div>
+      {cinematicVisible && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            clipPath: frame < 985 ? `circle(${circle * 980}px at 50% 50%)` : "none",
+            transform: `scaleX(${1 + squashOut * 0.055}) scaleY(${1 - squashOut * 0.95})`,
+            opacity: cinematicOpacity,
+            transformOrigin: "50% 50%",
+          }}
+        >
+          <CinematicMode frame={frame} />
+        </div>
       )}
-      {cinematic && <CinematicMode frame={frame} />}
-      {pixel && <PixelMode frame={frame} />}
-      <ActiveCursor frame={frame} />
+      {frame >= 900 && frame < 985 && (
+        <div
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            width: circle * 1960,
+            height: circle * 1960,
+            borderRadius: "50%",
+            border: "3px solid #d5eaff",
+            boxShadow: "0 0 32px #75b7ff, inset 0 0 32px #75b7ff",
+            opacity: 1 - progress(frame, 965, 985),
+            transform: "translate(-50%,-50%)",
+            zIndex: 85,
+            pointerEvents: "none",
+          }}
+        />
+      )}
+      {cityVisible && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            opacity: cityOpacity,
+            transform: `scaleX(${1.055 - cityExpand * 0.055}) scaleY(${0.05 + cityExpand * 0.95})`,
+            transformOrigin: "50% 50%",
+          }}
+        >
+          <CityMode frame={frame} />
+        </div>
+      )}
+      {frame >= 1148 && frame < 1190 && (
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: "50%",
+            height: 3,
+            background: "linear-gradient(90deg,transparent,#b7ddff,#e8f5ff,#b7ddff,transparent)",
+            boxShadow: "0 0 30px #75b7ff",
+            opacity: 1 - Math.abs(frame - 1168) / 22,
+            zIndex: 90,
+          }}
+        />
+      )}
     </div>
   );
 };
 
 const cameraForFrame = (frame) => {
-  let scale = 0.86;
-  let x = 0;
-  let y = 12;
-  let rx = 1.8;
-  let ry = -2.6;
-
-  if (frame >= 110 && frame < 292) {
-    const zoomIn = progress(frame, 110, 157);
-    const zoomOut = progress(frame, 260, 292);
-    const mix = zoomIn * (1 - zoomOut);
-    scale = 0.86 + mix * 0.27;
-    x = mix * 210;
-    y = mix * 128;
-    rx = 1.8 - mix * 1.8;
-    ry = -2.6 + mix * 2.6;
-  } else if (frame >= 292 && frame < 480) {
-    scale = 0.91;
-    x = 0;
-    y = 4;
-    rx = interpolate(progress(frame, 292, 480), [0, 1], [0.8, -0.5]);
-    ry = interpolate(progress(frame, 292, 480), [0, 1], [1.7, -1.1]);
-  } else if (frame >= 480 && frame < 630) {
-    const drift = progress(frame, 480, 630);
-    scale = 0.9 + drift * 0.02;
-    x = interpolate(drift, [0, 1], [18, -18]);
-    y = 8;
-    rx = 0.7;
-    ry = interpolate(drift, [0, 1], [-1.8, 1.4]);
-  } else if (frame >= 630) {
-    const zoom = progress(frame, 645, 700) * (1 - progress(frame, 734, 774));
-    scale = 0.86 + zoom * 0.16;
-    x = -zoom * 120;
-    y = zoom * 60;
-    rx = 1.3 - zoom;
-    ry = -2 + zoom * 2;
-  }
-
-  return {scale, x, y, rx, ry};
+  const frames = [0, 32, 90, 120, 165, 225, 285, 325, 370, 420, 470, 520, 570, 640, 735, 790, 880, 925, 985, 1035, 1125, 1168, 1210, 1319];
+  const sample = (values) => interpolate(frame, frames, values, {...clamp, easing: Easing.inOut(Easing.cubic)});
+  const addClick = Math.max(...[105, 165, 225, 285].map((center) => Math.max(0, 1 - Math.abs(frame - center) / 9)));
+  const assignmentClick = Math.max(...[382, 437, 492, 547].map((center) => Math.max(0, 1 - Math.abs(frame - center) / 10)));
+  const impact = Math.max(addClick, assignmentClick);
+  return {
+    scale: sample([0.79, 0.865, 0.875, 0.925, 0.94, 0.94, 0.94, 0.885, 0.945, 0.955, 0.955, 0.95, 0.865, 0.875, 0.885, 0.93, 0.93, 0.9, 0.93, 0.955, 0.94, 0.9, 0.885, 0.9]) - impact * 0.008,
+    x: sample([0, 0, -8, 38, -48, 42, -42, 0, 44, -54, 46, -52, 0, 0, 0, -78, -92, -38, 0, -52, -32, 0, 0, 0]),
+    y: sample([58, 12, 8, 22, 17, -5, -13, 7, 26, 22, -18, -22, 5, 12, 8, 5, 8, 4, 0, -24, -28, 0, 8, 4]) + impact * 3,
+    rx: sample([4.2, 1.5, 1.2, 0.7, 0.3, -0.5, -0.8, 0.6, 0.5, 0.1, -0.6, -0.8, 0.7, 1.1, 0.6, 0.25, 0.2, 0.45, 0.1, -0.4, -0.55, 0.4, 0.7, 0.25]),
+    ry: sample([-4.8, -2.1, -1.2, 1.6, -1.8, 1.5, -1.35, -0.5, 1.45, -1.55, 1.35, -1.45, -0.4, 0.45, 0.75, -1.6, -1.25, 0.75, 0.15, -1.0, -0.7, -0.2, 0.8, -0.35]),
+    rz: sample([-0.8, -0.15, 0, 0.12, -0.15, 0.12, -0.1, 0, 0.08, -0.1, 0.08, -0.08, 0, 0.04, 0, -0.08, -0.05, 0.08, 0, -0.08, -0.04, 0, 0.08, 0]),
+  };
 };
 
 export const BsCodeDemo = () => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const intro = spring({
-    frame,
-    fps,
-    config: {damping: 22, stiffness: 96, mass: 0.9},
-  });
-  const end = progress(frame, 776, 809);
-  const cam = cameraForFrame(frame);
-
+  const intro = spring({frame, fps, config: {damping: 22, stiffness: 96, mass: 0.9}});
+  const end = progress(frame, 1300, 1319);
+  const camera = cameraForFrame(frame);
   return (
     <AbsoluteFill
       style={{
         overflow: "hidden",
-        background: "#07080a",
+        background: "radial-gradient(circle at 16% 16%,#17355c55,transparent 34%),radial-gradient(circle at 84% 82%,#16483b3b,transparent 30%),#07080a",
         fontFamily: "Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, system-ui",
       }}
     >
+      <div
+        style={{
+          position: "absolute",
+          left: 100 + Math.sin(frame / 38) * 55,
+          top: 85 + Math.cos(frame / 45) * 30,
+          width: 620,
+          height: 620,
+          borderRadius: "50%",
+          background: "radial-gradient(circle,#245ea638,transparent 68%)",
+          filter: "blur(28px)",
+          opacity: 0.65,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          right: 40 + Math.cos(frame / 43) * 60,
+          bottom: -110 + Math.sin(frame / 52) * 30,
+          width: 700,
+          height: 700,
+          borderRadius: "50%",
+          background: "radial-gradient(circle,#176c5b30,transparent 68%)",
+          filter: "blur(34px)",
+          opacity: 0.6,
+        }}
+      />
       <div
         style={{
           position: "absolute",
@@ -1254,7 +1372,7 @@ export const BsCodeDemo = () => {
             width: APP_WIDTH,
             height: APP_HEIGHT,
             transformOrigin: "50% 50%",
-            transform: `translate3d(${cam.x}px,${cam.y + (1 - intro) * 50}px,0) scale(${cam.scale * (0.96 + intro * 0.04)}) rotateX(${cam.rx}deg) rotateY(${cam.ry}deg)`,
+            transform: `translate3d(${camera.x}px,${camera.y}px,0) scale(${camera.scale * (0.96 + intro * 0.04)}) rotateX(${camera.rx}deg) rotateY(${camera.ry}deg) rotateZ(${camera.rz}deg)`,
             transformStyle: "preserve-3d",
           }}
         >
@@ -1262,33 +1380,6 @@ export const BsCodeDemo = () => {
         </div>
       </div>
       <FeatureCaption frame={frame} />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          opacity: end,
-          background: "#07080a",
-          display: "grid",
-          placeItems: "center",
-        }}
-      >
-        <div
-          style={{
-            opacity: progress(frame, 787, 803) * (1 - progress(frame, 803, 809)),
-            transform: `scale(${0.92 + progress(frame, 787, 803) * 0.08})`,
-            display: "flex",
-            alignItems: "center",
-            gap: 16,
-            color: "#f6f8fb",
-            fontSize: 34,
-            fontWeight: 760,
-            letterSpacing: -1.4,
-          }}
-        >
-          <BrandMark size={58} />
-          BsCode
-        </div>
-      </div>
     </AbsoluteFill>
   );
 };
