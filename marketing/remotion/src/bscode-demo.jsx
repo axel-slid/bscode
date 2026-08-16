@@ -14,6 +14,17 @@ import face2 from "../../../assets/agent-face-2.png";
 import face3 from "../../../assets/agent-face-3.png";
 import appIcon from "../../../assets/app-icon.png";
 import cityBackground from "../../../assets/city-realistic-v2.png";
+import cinematicMonet from "../../../assets/scenes/monet-bridge-water-lilies.webp";
+import cinematicStarryNight from "../../../assets/scenes/van-gogh-starry-night.webp";
+import cinematicAndes from "../../../assets/scenes/heart-of-andes.webp";
+import floor1 from "../../../assets/tower-previews/floor-01.png";
+import floor4 from "../../../assets/tower-previews/floor-04.png";
+import floor7 from "../../../assets/tower-previews/floor-07.png";
+import floor12 from "../../../assets/tower-previews/floor-12.png";
+import pixelChar0 from "../../../pixel-agents-mode/assets/characters/char_0.png";
+import pixelChar1 from "../../../pixel-agents-mode/assets/characters/char_1.png";
+import pixelChar2 from "../../../pixel-agents-mode/assets/characters/char_2.png";
+import pixelChar3 from "../../../pixel-agents-mode/assets/characters/char_3.png";
 
 const APP_WIDTH = 1600;
 const APP_HEIGHT = 900;
@@ -22,6 +33,8 @@ const clamp = {extrapolateLeft: "clamp", extrapolateRight: "clamp"};
 const ease = Easing.bezier(0.22, 1, 0.36, 1);
 const colors = ["#75b7ff", "#e59b67", "#ad91ff", "#72d1aa"];
 const faces = [face0, face1, face2, face3];
+const pixelCharacters = [pixelChar0, pixelChar1, pixelChar2, pixelChar3];
+const pixelFloors = [floor1, floor4, floor7, floor12];
 const names = ["Jesse", "Maeve", "Grayson", "Julianna"];
 const tasks = [
   "Build the command palette",
@@ -882,6 +895,13 @@ const MentionComposer = ({frame}) => {
 
 const CinematicMode = ({frame}) => {
   const focusMix = progress(frame, 982, 1030);
+  const sceneDrift = progress(frame, 900, 1140);
+  const scenes = [
+    {src: cinematicMonet, name: "Monet Bridge", opacity: 1 - progress(frame, 985, 1008)},
+    {src: cinematicStarryNight, name: "Starry Night", opacity: progress(frame, 985, 1008) * (1 - progress(frame, 1050, 1075))},
+    {src: cinematicAndes, name: "Heart of the Andes", opacity: progress(frame, 1050, 1075)},
+  ];
+  const activeScene = frame < 997 ? scenes[0] : frame < 1062 ? scenes[1] : scenes[2];
   const initial = [
     {x: 48, y: 72, w: 657, h: 346},
     {x: 723, y: 72, w: 829, h: 346},
@@ -895,14 +915,44 @@ const CinematicMode = ({frame}) => {
     {x: 1015, y: 552, w: 300, h: 175},
   ];
   return (
-    <div style={{position: "absolute", inset: 0, background: "linear-gradient(145deg,#11151b 0%,#090c10 48%,#12161b 100%)", overflow: "hidden"}}>
+    <div style={{position: "absolute", inset: 0, background: "#080b10", overflow: "hidden"}}>
+      {scenes.map((scene, index) => (
+        <Img
+          key={scene.name}
+          src={scene.src}
+          style={{
+            position: "absolute",
+            inset: -34,
+            width: APP_WIDTH + 68,
+            height: APP_HEIGHT + 68,
+            objectFit: "cover",
+            objectPosition: index === 0 ? "50% 48%" : index === 1 ? "50% 42%" : "50% 52%",
+            filter: "brightness(.72) saturate(.92)",
+            opacity: scene.opacity,
+            transform: `scale(${1.025 + sceneDrift * 0.025}) translate(${(index - 1) * sceneDrift * 7}px,${-sceneDrift * 5}px)`,
+          }}
+        />
+      ))}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background: `radial-gradient(circle at ${62 - focusMix * 4}% ${34 + focusMix * 3}%,rgba(255,255,255,.055),transparent 28%),linear-gradient(180deg,rgba(255,255,255,.025),rgba(0,0,0,.22))`,
+          background: `radial-gradient(circle at ${62 - focusMix * 4}% ${34 + focusMix * 3}%,transparent 0 18%,rgba(4,7,11,.34) 72%),linear-gradient(180deg,rgba(3,6,10,.12),rgba(3,6,10,.44))`,
         }}
       />
+      <div
+        style={{
+          position: "absolute",
+          left: 24,
+          top: 20,
+          color: "rgba(255,255,255,.72)",
+          font: "650 9px Inter, system-ui",
+          letterSpacing: 1.1,
+          zIndex: 6,
+        }}
+      >
+        SCENE · {activeScene.name}
+      </div>
       {[0, 1, 2, 3].map((index) => {
         const start = initial[index];
         const end = focused[index];
@@ -951,6 +1001,25 @@ const CinematicMode = ({frame}) => {
   );
 };
 
+const PixelCharacter = ({index, frame, scale = 2}) => {
+  const sequence = [0, 1, 2, 1];
+  const spriteFrame = sequence[Math.floor((frame + index * 5) / 7) % sequence.length];
+  return (
+    <div
+      style={{
+        width: 16 * scale,
+        height: 24 * scale,
+        backgroundImage: `url(${pixelCharacters[index]})`,
+        backgroundRepeat: "no-repeat",
+        backgroundSize: `${112 * scale}px ${96 * scale}px`,
+        backgroundPosition: `${-spriteFrame * 16 * scale}px 0`,
+        imageRendering: "pixelated",
+        filter: "drop-shadow(0 4px 2px rgba(0,0,0,.55))",
+      }}
+    />
+  );
+};
+
 const CityAgentCard = ({index, frame, left, top}) => {
   const show = spring({
     frame: frame - 1172 - index * 7,
@@ -964,14 +1033,14 @@ const CityAgentCard = ({index, frame, left, top}) => {
         position: "absolute",
         left,
         top,
-        width: 244,
-        minHeight: 148,
-        borderRadius: 15,
-        background: "rgba(9,13,18,.88)",
-        border: "1px solid rgba(255,255,255,.2)",
+        width: 260,
+        minHeight: 204,
+        borderRadius: 13,
+        background: "rgba(9,13,18,.92)",
+        border: "1px solid rgba(255,255,255,.24)",
         boxShadow: "0 20px 55px rgba(0,0,0,.55), inset 0 1px rgba(255,255,255,.06)",
         backdropFilter: "blur(18px) saturate(.8)",
-        padding: 13,
+        padding: 10,
         boxSizing: "border-box",
         transform: `translateY(${(1 - show) * 28}px) scale(${0.9 + show * 0.1})`,
         opacity: show,
@@ -986,7 +1055,7 @@ const CityAgentCard = ({index, frame, left, top}) => {
           font: "750 11px Inter, system-ui",
         }}
       >
-        <Img src={faces[index]} style={{width: 28, height: 28, imageRendering: "pixelated", borderRadius: 7, marginRight: 9}} />
+        <span style={{width: 7, height: 7, borderRadius: 8, background: colors[index], marginRight: 8, boxShadow: `0 0 ${6 + activity * 7}px ${colors[index]}`}} />
         {names[index]}
         <span style={{marginLeft: "auto", color: "#aab4c0", fontSize: 8, display: "flex", alignItems: "center", gap: 6}}>
           <i style={{display: "block", width: 6, height: 6, borderRadius: 8, background: colors[index], boxShadow: `0 0 ${6 + activity * 7}px ${colors[index]}`}} />
@@ -995,25 +1064,68 @@ const CityAgentCard = ({index, frame, left, top}) => {
       </div>
       <div
         style={{
-          marginTop: 13,
-          color: "#e3e8ee",
-          font: "600 9px/1.4 ui-monospace, Menlo, monospace",
+          position: "relative",
+          height: 126,
+          marginTop: 9,
+          borderRadius: 8,
+          overflow: "hidden",
+          border: "2px solid #05080d",
+          background: "#0a1018",
         }}
       >
-        {tasks[index]}
+        <Img
+          src={pixelFloors[index]}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            imageRendering: "pixelated",
+            filter: "brightness(.86) saturate(.92)",
+          }}
+        />
+        <div style={{position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.08),transparent 54%,rgba(0,0,0,.2))"}} />
+        <div
+          style={{
+            position: "absolute",
+            left: 104 + Math.sin((frame + index * 13) / 18) * 24,
+            bottom: 15 + (index % 2) * 4,
+          }}
+        >
+          <PixelCharacter index={index} frame={frame} scale={2} />
+        </div>
+        <div
+          style={{
+            position: "absolute",
+            left: 8,
+            top: 7,
+            maxWidth: 182,
+            padding: "5px 7px",
+            borderRadius: 6,
+            background: "rgba(4,7,11,.8)",
+            color: "#eef3f8",
+            font: "650 7px/1.25 ui-monospace, Menlo, monospace",
+          }}
+        >
+          {tasks[index]}
+        </div>
       </div>
       <div
         style={{
-          marginTop: 9,
+          marginTop: 8,
           color: "#7f8996",
           font: "500 8px ui-monospace, Menlo, monospace",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
         }}
       >
         {terminalLines[index][Math.min(3, Math.floor(progress(frame, 1185 + index * 6, 1260 + index * 5) * 4))]}
       </div>
       <div
         style={{
-          marginTop: 13,
+          marginTop: 8,
           height: 3,
           borderRadius: 5,
           background: "rgba(255,255,255,.09)",
@@ -1158,7 +1270,7 @@ const AppWindow = ({frame}) => {
         borderRadius: 25,
         background: "#0e1218",
         overflow: "hidden",
-        boxShadow: "0 55px 140px #000c",
+        boxShadow: "none",
       }}
     >
       <div style={{position: "absolute", inset: 0, opacity: standardOpacity}}>
